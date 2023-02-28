@@ -27,7 +27,7 @@ Yrinvert = 480-Yr;
 Yyinvert = 480-Yy;
 Ywinvert = 480-Yw;
 
-% Find the min. value of the x
+% Find the min. value of x
 
 minXr = min(Xr);
 minXy = min(Xy);
@@ -66,14 +66,10 @@ rectangle('Position',[minX minYinvert length_rectangle width_rectangle])
 
 hold on %keep every next plot on the same plot
 
-% Create 3 plots for the coordonates r-y-w
+% Create 3 plots for the coordonates of r-y-w
 
 plot(Xr,Yrinvert,'r-*')
 plot(Xy,Yyinvert, 'g-o')
 plot(Xw,Ywinvert,'b-+')
 
 hold off;
-
-
-
-
