@@ -11,65 +11,47 @@ Xw=[169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 
 Yw=[113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 112 112 112 112 112 112 112 112 112 112 112 112 112 112 112 112 113 113 114 114 114 114 114 114 115 115 115 115 115 115 115 115 115 115 115 115 115 115 116 116 116 116 116 116 116 117 117 117 117 117 117 117 117 117 118 118 118 118 118 118 118 118 118
 ];
 
-%PARTIE 1
-    
-Xr = fillmissing(Xr,'next');% fillmissing replaces NaN values
-Yr = fillmissing(Yr,'next');% 'next' tells to replace with the next non-Nan value
-Xy = fillmissing(Xy,'next');
-Yy = fillmissing(Yy,'next');
-Xw = fillmissing(Xw,'next');
-Yw = fillmissing(Yw,'next');
+[Xr, Yr] = InterpolateNan(Xr,Yr)
+[Xy, Yy] = InterpolateNan(Xy,Yy)
+[Xw, Yw] = InterpolateNan(Xw,Yw)
 
-% Invert of Y-values because of non-equivalence between
-% 0-Matlab and 0-Labview
+[Xr, Yr] = RemoveOutlier(Xr,Yr)
+[Xy, Yy] = RemoveOutlier(Xy,Yy)
+[Xw, Yw] = RemoveOutlier(Xw,Yw)
 
-Yrinvert = 480-Yr;
-Yyinvert = 480-Yy;
-Ywinvert = 480-Yw;
+[Xmin, Xmax, Ymin, Ymax] = GetFrame(Xr,Yr,Xy,Yy,Xw,Yw)
 
-% Find the min. value of x
+PathLength_r = GetBallPathLength(Xr,Yr)
+PathLength_y = GetBallPathLength(Xy,Yy)
+PathLength_w = GetBallPathLength(Xw,Yw)
 
-minXr = min(Xr);
-minXy = min(Xy);
-minXw = min(Xw);
-minX = min([minXr minXy minXw]);
+BallBorderDist=9;
 
-% Find the max. value of the x
+[IdxTouch_r]=GetTouchIdx(Xr,Yr,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
+[IdxTouch_y]=GetTouchIdx(Xy,Yy,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
+[IdxTouch_w]=GetTouchIdx(Xw,Yw,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
 
-maxXr = max(Xr);
-maxXy = max(Xy);
-maxXw = max(Xw);
-maxX = max([maxXr maxXy maxXw]);
+MoveDistPx=9;
 
-% Find the min. value of inverted y
-
-minYrinvert = min(Yrinvert);
-minYyinvert = min(Yyinvert);
-minYwinvert = min(Ywinvert);
-minYinvert = min([minYrinvert minYyinvert minYwinvert]);
-
-% Find the max. value of inverted y
-
-maxYrinvert = max(Yrinvert);
-maxYyinvert = max(Yyinvert);
-maxYwinvert = max(Ywinvert);
-maxYinvert = max([maxYrinvert maxYyinvert maxYwinvert]);
+[FirstBall,SecondBall,LastBall, NbBallsMoved] = GetBallMoveOrder(Xr, Yr, Xy, Yy, Xw, Yw, MoveDistPx)
 
 % Define the length and the width
 
-length_rectangle = maxX-minX;
-width_rectangle = maxYinvert-minYinvert;
+length_rectangle = Xmax-Xmin;
+width_rectangle = Ymax-Ymin;
 
 % Create a rectangle with these length and width value
 
-rectangle('Position',[minX minYinvert length_rectangle width_rectangle])
+rectangle('Position',[Xmin Ymin length_rectangle width_rectangle])
 
 hold on %keep every next plot on the same plot
 
 % Create 3 plots for the coordonates of r-y-w
 
-plot(Xr,Yrinvert,'r-*')
-plot(Xy,Yyinvert, 'g-o')
-plot(Xw,Ywinvert,'b-+')
+plot(Xr,Yr,'r-*')
+plot(Xy,Yy, 'g-o')
+plot(Xw,Yw,'b-+')
 
 hold off;
+
+
