@@ -1,26 +1,26 @@
 function [IdxTouch]=GetTouchIdx(X,Y,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
 
 %%Xmax
-len=length(X);
-O = ones(1,len);
-A = Xmax * O;
-B = A-X;
-cbt = find(B <= BallBorderDist);
-if cbt(1) == 1
-    cbt(:,1) = [];
+DiffXmax = Xmax-X;%diff. entre Xmax et la matrice X -> matrice
+cbt = find(DiffXmax <= BallBorderDist);%cbt est une matrice remplie des indices des éléments
+                                        %de DiffXmax qui sont <= à BallBorderDist
+
+if cbt(1) == 1%test si le premier élément de cbt est la position initiale de la balle.            
+    cbt(:,1) = [];%si c'est le cas, on a donc que la boule "touche" la bande 
+                    %sans avoir été jouée -> on ne compte pas comme rebond ! 
 end
-Cons = diff(cbt);
-IdCons = find(Cons == 1);
-IdCons = IdCons + 1;
-cbt(:,IdCons) = [];
-IdxTouchXmax = cbt;
+
+Cons = diff(cbt);%diff. des éléments de cbt 2à2
+IdCons = find(Cons == 1);%trouver tous les indices de Cons ou les valeurs valent 1
+                           %ce qui implique 2 éléments consécutifs proches
+                           %de la bande
+IdCons = IdCons + 1;%ajouer 1 à cela pour ne pas supprimer le premier élément
+cbt(:,IdCons) = [];%supprimer les éléments aux positions IdCons
+IdxTouchXmax = cbt;%matrice des index où la boule touche Xmax
 
 %%Xmin
-len=length(X);
-O = ones(1,len);
-A = Xmin * O;
-B = X-A;
-cbt = find(B <= BallBorderDist);
+DiffXMin = X-Xmin;%...
+cbt = find(DiffXMin <= BallBorderDist);
 if cbt(1) == 1
     cbt(:,1) = [];
 end
@@ -31,11 +31,8 @@ cbt(:,IdCons) = [];
 IdxTouchXmin = cbt;
 
 %%Ymax
-len=length(Y);
-O = ones(1,len);
-A = Ymax * O;
-B = A-Y;
-cbt = find(B <= BallBorderDist);
+DiffYmax = Ymax-Y;
+cbt = find(DiffYmax <= BallBorderDist);
 if cbt(1) == 1
     cbt(:,1) = [];
 end
@@ -46,11 +43,8 @@ cbt(:,IdCons) = [];
 IdxTouchYmax = cbt;
 
 %%Ymin
-len=length(Y);
-O = ones(1,len);
-A = Ymin * O;
-B = Y - A;
-cbt = find(B <= BallBorderDist);
+DiffYmin = Y-Ymin;
+cbt = find(DiffYmin <= BallBorderDist);
 if cbt(1) == 1
     cbt(:,1) = [];
 end
@@ -61,6 +55,5 @@ cbt(:,IdCons) = [];
 IdxTouchYmin = cbt;
 
 IdxTouch = sort([IdxTouchXmin IdxTouchXmax IdxTouchYmin IdxTouchYmax])
-
 
 end
