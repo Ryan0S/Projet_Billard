@@ -12,13 +12,13 @@ Xymax= max(Xy);
 Xwmax = max(Xw);
 Xmax = max([Xrmax Xymax Xwmax]);
 
-% Trouver le min de Yinvert
+% Trouver le min de Y
 Yrmin = min(Yr);
 Yymin = min(Yy);
 Ywmin = min(Yw);
 Ymin = min([Yrmin Yymin Ywmin]);
 
-% trouver le max de Yinvert
+% trouver le max de Y
 Yrmax = max(Yr);
 Yymax = max(Yy);
 Ywmax = max(Yw);
