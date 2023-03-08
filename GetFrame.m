@@ -11,9 +11,9 @@ Yw = fillmissing(Yw,'next');
 % Invert of Y-values because of non-equivalence between
 % 0-Matlab and 0-Labview
 
-Yrinvert = 480-Yr;
-Yyinvert = 480-Yy;
-Ywinvert = 480-Yw;
+Yrinvert = Yr;
+Yyinvert = Yy;
+Ywinvert = Yw;
 
 % Find the min. value of x
 
