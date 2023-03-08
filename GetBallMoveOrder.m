@@ -4,6 +4,8 @@ function [FirstBall,SecondBall,LastBall, NbBallsMoved] = GetBallMoveOrder(Xr, Yr
 [IdY, DistY] = GetFirstMoveIdx(Xy,Yy, MoveDistPx);
 [IdW, DistW] = GetFirstMoveIdx(Xw,Yw, MoveDistPx);
 
+Id = [IdR IdY IdW];
+
 cbt = [IdR -DistR 1; IdY -DistY 2; IdW -DistW 3];
 cock = sortrows(cbt);
 FirstBall = cock(1,3);
