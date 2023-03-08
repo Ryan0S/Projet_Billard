@@ -1,51 +1,27 @@
 function [Xmin, Xmax, Ymin, Ymax] = GetFrame(Xr,Yr,Xy,Yy,Xw,Yw)
 
-    
-Xr = fillmissing(Xr,'next');% fillmissing replaces NaN values
-Yr = fillmissing(Yr,'next');% 'next' tells to replace with the next non-Nan value
-Xy = fillmissing(Xy,'next');
-Yy = fillmissing(Yy,'next');
-Xw = fillmissing(Xw,'next');
-Yw = fillmissing(Yw,'next');
+% trouver le min de X
+Xrmin = min(Xr);
+Xymin = min(Xy);
+Xwmin = min(Xw);
+Xmin = min([Xrmin Xymin Xwmin]);
 
-% Invert of Y-values because of non-equivalence between
-% 0-Matlab and 0-Labview
+% trouver le max de X
+Xrmax = max(Xr);
+Xymax= max(Xy);
+Xwmax = max(Xw);
+Xmax = max([Xrmax Xymax Xwmax]);
 
-Yrinvert = 480-Yr;
-Yyinvert = 480-Yy;
-Ywinvert = 480-Yw;
+% Trouver le min de Yinvert
+Yrmin = min(Yr);
+Yymin = min(Yy);
+Ywmin = min(Yw);
+Ymin = min([Yrmin Yymin Ywmin]);
 
-% Find the min. value of x
-
-minXr = min(Xr);
-minXy = min(Xy);
-minXw = min(Xw);
-minX = min([minXr minXy minXw]);
-
-% Find the max. value of the x
-
-maxXr = max(Xr);
-maxXy = max(Xy);
-maxXw = max(Xw);
-maxX = max([maxXr maxXy maxXw]);
-
-% Find the min. value of inverted y
-
-minYrinvert = min(Yrinvert);
-minYyinvert = min(Yyinvert);
-minYwinvert = min(Ywinvert);
-minYinvert = min([minYrinvert minYyinvert minYwinvert]);
-
-% Find the max. value of inverted y
-
-maxYrinvert = max(Yrinvert);
-maxYyinvert = max(Yyinvert);
-maxYwinvert = max(Ywinvert);
-maxYinvert = max([maxYrinvert maxYyinvert maxYwinvert]);
-
-Xmin=minX;
-Xmax=maxX;
-Ymin=minYinvert;
-Ymax=maxYinvert;
+% trouver le max de Yinvert
+Yrmax = max(Yr);
+Yymax = max(Yy);
+Ywmax = max(Yw);
+Ymax = max([Yrmax Yymax Ywmax]);
 
 end
