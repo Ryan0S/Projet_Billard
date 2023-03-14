@@ -2,29 +2,23 @@ function [X,Y]=RemoveOutlier(X,Y)
 
 sugma = isoutlier(X,"movmedian",10);
 IdOutlierX = find(sugma);
-if isempty(IdOutlierX)
-    
-elseif IdOutlierX(1) == 1
-    IdOutlierX(1) = [];
-    PrevIdOutlierX = IdOutlierX - 1;
-    X(IdOutlierX)= X(PrevIdOutlierX);
-else 
-    PrevIdOutlierX = IdOutlierX - 1;
-    X(IdOutlierX)= X(PrevIdOutlierX);
-end
-
 
 ligma = isoutlier(Y,"movmedian",10);
 IdOutlierY = find(ligma);
-if isempty(IdOutlierY)
+
+IdOutlier = intersect(IdOutlierX, IdOutlierY);
+
+if isempty(IdOutlier)
     
-elseif IdOutlierY(1) == 1
-    IdOutlierY(1) = [];
-    PrevIdOutlierY = IdOutlierY - 1;
-    Y(IdOutlierY)= Y(PrevIdOutlierY);
+elseif IdOutlier(1) == 1
+    IdOutlier(1) = [];
+    PrevIdOutlier = IdOutlier - 1;
+    X(IdOutlier)= X(PrevIdOutlier);
+    Y(IdOutlier)= Y(PrevIdOutlier);
 else 
-    PrevIdOutlierY = IdOutlierY - 1;
-    Y(IdOutlierY)= Y(PrevIdOutlierY);
+    PrevIdOutlier = IdOutlier - 1;
+    X(IdOutlier)= X(PrevIdOutlier);
+    Y(IdOutlier)= Y(PrevIdOutlier);
 end
 
 end
