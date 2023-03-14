@@ -2,7 +2,7 @@ function [IdxTouch]=GetTouchIdx(X,Y,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
 
 %%Xmax
 DiffXmax = Xmax-X;%diff. entre Xmax et la matrice X -> matrice
-cbt = find(DiffXmax <= BallBorderDist);%cbt est une matrice remplie des indices des éléments
+cbt = find(DiffXmax < BallBorderDist);%cbt est une matrice remplie des indices des éléments
                                         %de DiffXmax qui sont <= à BallBorderDist
 if isempty(cbt)
     IdxTouchXmax = [];
@@ -21,7 +21,7 @@ IdxTouchXmax = cbt;%matrice des index où la boule touche Xmax
 
 %%Xmin
 DiffXMin = X-Xmin;%...
-cbt = find(DiffXMin <= BallBorderDist);
+cbt = find(DiffXMin < BallBorderDist);
 if isempty(cbt)
     IdxTouchXmin = [];
 elseif cbt(1) == 1
@@ -35,7 +35,7 @@ IdxTouchXmin = cbt;
 
 %%Ymax
 DiffYmax = Ymax-Y;
-cbt = find(DiffYmax <= BallBorderDist);
+cbt = find(DiffYmax < BallBorderDist);
 if isempty(cbt)
     IdxTouchYmax = [];
 elseif cbt(1) == 1
