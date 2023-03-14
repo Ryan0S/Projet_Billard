@@ -11,46 +11,113 @@ Xw=[169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 169 
 Yw=[113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 113 112 112 112 112 112 112 112 112 112 112 112 112 112 112 112 112 113 113 114 114 114 114 114 114 115 115 115 115 115 115 115 115 115 115 115 115 115 115 116 116 116 116 116 116 116 117 117 117 117 117 117 117 117 117 118 118 118 118 118 118 118 118 118
 ];
 
-[Xr, Yr] = InterpolateNan(Xr,Yr)
-[Xy, Yy] = InterpolateNan(Xy,Yy)
-[Xw, Yw] = InterpolateNan(Xw,Yw)
+%%Appelle des fonctions
 
-[Xr, Yr] = RemoveOutlier(Xr,Yr)
-[Xy, Yy] = RemoveOutlier(Xy,Yy)
-[Xw, Yw] = RemoveOutlier(Xw,Yw)
+Yr=480-Yr;
+Yy=480-Yy;
+Yw=480-Yw;
 
-[Xmin, Xmax, Ymin, Ymax] = GetFrame(Xr,Yr,Xy,Yy,Xw,Yw)
+[Xr, Yr] = InterpolateNan(Xr,Yr);
+[Xy, Yy] = InterpolateNan(Xy,Yy);
+[Xw, Yw] = InterpolateNan(Xw,Yw);
 
-PathLength_r = GetBallPathLength(Xr,Yr)
-PathLength_y = GetBallPathLength(Xy,Yy)
-PathLength_w = GetBallPathLength(Xw,Yw)
+[Xr, Yr] = RemoveOutlier(Xr,Yr);
+[Xy, Yy] = RemoveOutlier(Xy,Yy);
+[Xw, Yw] = RemoveOutlier(Xw,Yw);
+
+[Xmin, Xmax, Ymin, Ymax] = GetFrame(Xr,Yr,Xy,Yy,Xw,Yw);
+
+PathLength_r = GetBallPathLength(Xr,Yr);
+PathLength_y = GetBallPathLength(Xy,Yy);
+PathLength_w = GetBallPathLength(Xw,Yw);
 
 BallBorderDist=9;
 
-[IdxTouch_r]=GetTouchIdx(Xr,Yr,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
-[IdxTouch_y]=GetTouchIdx(Xy,Yy,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
-[IdxTouch_w]=GetTouchIdx(Xw,Yw,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
+[IdxTouch_r]=GetTouchIdx(Xr,Yr,Xmin, Xmax, Ymin, Ymax, BallBorderDist);
+[IdxTouch_y]=GetTouchIdx(Xy,Yy,Xmin, Xmax, Ymin, Ymax, BallBorderDist);
+[IdxTouch_w]=GetTouchIdx(Xw,Yw,Xmin, Xmax, Ymin, Ymax, BallBorderDist);
 
 MoveDistPx=9;
 
-[FirstBall,SecondBall,LastBall, NbBallsMoved] = GetBallMoveOrder(Xr, Yr, Xy, Yy, Xw, Yw, MoveDistPx)
+[FirstBall,SecondBall,LastBall, NbBallsMoved] = GetBallMoveOrder(Xr, Yr, Xy, Yy, Xw, Yw, MoveDistPx);
+
+%%Divers
 
 % Define the length and the width
 
 length_rectangle = Xmax-Xmin;
 width_rectangle = Ymax-Ymin;
+now_time = datetime('now');
+date = datestr(now_time);
+sequence='T1';
 
-% Create a rectangle with these length and width value
+%Condition de victoire
 
-rectangle('Position',[Xmin Ymin length_rectangle width_rectangle])
+if FirstBall == 1
+    band_touches = IdxTouch_r;
+    FirstBall_color = 'red';
+
+elseif FirstBall == 2
+    band_touches = IdxTouch_y;
+    FirstBall_color = 'yellow';
+
+else
+    band_touches = IdxTouch_w;
+    FirstBall_color = 'white';
+
+end
+
+
+if length(band_touches)>=3 
+    result = '---WIN---';
+else
+    result = '---LOOSE---';
+end
+
+
+%%Graph
+
+Scores_sheet = rectangle('Position',[Xmin Ymin length_rectangle width_rectangle],'EdgeColor','b');
 
 hold on %keep every next plot on the same plot
 
 % Create 3 plots for the coordonates of r-y-w
 
-plot(Xr,Yr,'r-*')
-plot(Xy,Yy, 'g-o')
-plot(Xw,Yw,'b-+')
+
+plot(Xr,Yr,'r-*');
+plot(Xy,Yy,'y-o');
+plot(Xw,Yw,'b-+');
+
+set(gca,'XColor', 'none','YColor','none');
+axis([Xmin-20, Xmax+20, Ymin-130, Ymax+20]);%change white zone around the plot
+title(['Scores sheet - ' sequence ' - ' date]);
+
+text(128, 70, ['Sheet score for the ' FirstBall_color ' ball :'], 'HorizontalAlignment', 'left','FontSize',8);
+text(128, 50, result, 'HorizontalAlignment', 'left','FontSize',8);
+text(600, 70, [ num2str(NbBallsMoved) ' ball(s) moved'],'HorizontalAlignment', 'left','FontSize',8);
+text(600, 50, [ num2str(length(IdxTouch_y)) ' band(s) touched'],'HorizontalAlignment', 'left','FontSize',8);
+
+text(128, 20, [ 'Red ball distance : ' num2str(PathLength_r) ' px'],'HorizontalAlignment', 'left','FontSize',8);
+text(128, 0, [ 'Yellow ball distance : ' num2str(PathLength_y) ' px'],'HorizontalAlignment', 'left','FontSize',8);
+text(128, -20, [ 'White ball distance : ' num2str(PathLength_w) ' px'],'HorizontalAlignment', 'left','FontSize',8);
+
+Fr = plot(Xr(1), Yr(1), "hexagram");
+Fr.MarkerSize = 30;
+Fy = plot(Xy(1), Yy(1), "hexagram");
+Fy.MarkerSize = 30;
+Fw = plot(Xw(1), Yw(1), "hexagram");
+Fw.MarkerSize = 30;
+
+if FirstBall == 1
+    rb = plot(Xr(IdxTouch_r), Yr(IdxTouch_r), "o");
+rb.MarkerSize = 25;
+elseif FirstBall == 2
+    rb = plot(Xy(IdxTouch_y), Yy(IdxTouch_y), "o");
+rb.MarkerSize = 25;
+else FirstBall == 3
+    rb = plot(Xw(IdxTouch_w), Yw(IdxTouch_w), "o");
+rb.MarkerSize = 25;
+end
 
 hold off;
 
