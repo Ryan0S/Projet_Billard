@@ -1,0 +1,51 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <C:\Users\latti\Documents\EPFL\BA 4\Programmation pour ingénieurs\Projet\C\PM_2023.h>
+
+int main()
+{
+
+
+	int Width = rectext1 + rectext3;
+	int Height = rectext2 + rectext4;
+
+	//check si les valeurs entrées correspondent aux valeurs données pour la taille de la table de billard
+
+	if (myW != Width || myH != Height)
+		printf("Les contours entres ne correspondent pas aux contours attendus! Relancer!\n\n");
+
+	else
+		printf("\nLes contours entres correspondent aux contours attendus !\n\n");
+
+	//Check si le nombre de pixels correspond au nombre de valeurs de myPM
+	
+	size_t numberofvalues = sizeof(myPM) / sizeof(myPM[0]);
+	int numberofpixels = myW*myH;
+
+	printf("La hauteur de la table est de %d pixels", myW);
+	printf("\n\nLa largeur de la table est de %d pixels", myH);
+
+	if (numberofvalues == numberofpixels)
+		printf("\n\nil y a %d pixels !", numberofpixels);
+	else
+		printf("\n\nLe nombre de donnees ne correspond pas aux nombre de pixels !\n");
+
+	//Ecris le fichier Pos.txt
+
+	FILE *fp = NULL;
+
+	fp = fopen("Pos.txt", "w");
+	
+	fprintf(fp, "Red: %d, %d, %d", Xr, Yr, ScoremaxR);
+	fprintf(fp, "\nYellow: %d, %d, %d", Xy, Yy, ScoremaxY);
+	fprintf(fp, "\nWhite: %d, %d, %d", Xw, Yw, ScoremaxW);
+
+	fclose(fp);
+	
+
+}
+
+
