@@ -9,7 +9,7 @@ int IsColor(int BallredRmin, int BallredRmax, int BallredGmin, int BallredGmax, 
 	int RGBint, Blue, Green, Red;
 	int Out = 1;
 
-	for (int i = 1; i <= NumberOfPixels; i++) {
+	for (int i = 0; i < NumberOfPixels; i++) {
 		RGBint = MyPM[i];
 		Blue = RGBint & 255;
 		Green = (RGBint >> 8) & 255;
@@ -43,64 +43,79 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 
 	int count;
 
-	int PotBall[NumberOfPixels], ScoreR[NumberOfPixels], ScoreY[NumberOfPixels], ScoreW[NumberOfPixels], MaxR[2], MaxY[2], MaxW[2];
+	int ScoreR, ScoreY, ScoreW, MaxR[2], MaxY[2], MaxW[2];
 
-	for (int i = 0; i <= NumberOfPixels; i++) {
+    printf("Number of Pixels: %d\n\n\n", NumberOfPixels);
 
-		PotBall[i] = MyPM[i];
-	}
-
-	for (int i = 0; i <= NumberOfPixels; i++) {
-
+	for (int i = 0; i < NumberOfPixels; i++) {
+        //printf("%d\n\n", i);
+        ScoreR = 0;
+        ScoreW = 0;
+        ScoreY = 0;
 		for (int t1 = 0; t1 <= BallSize; t1++) {
 			for (int t2 = 0; t2 <= BallSize; t2++) {
-				if (PotBall[i + t2 + t1 * Width] == 2) {
-					ScoreR[i]++;
+				if (MyPM[i + t2 + t1 * Width] == 2) {
+					ScoreR++;
+                    //printf("Red\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 6) {
-					ScoreR[i]++;
-					ScoreY[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 6) {
+					ScoreR++;
+					ScoreY++;
+                    //printf("Red\n\n");
+                    //printf("Yellow\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 10) {
-					ScoreR[i]++;
-					ScoreW[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 10) {
+					ScoreR++;
+					ScoreW++;
+                    //printf("Red\n\n");
+                    //printf("White\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 3) {
-					ScoreY[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 3) {
+					ScoreY++;
+                    //printf("Yellow\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 5) {
-					ScoreW[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 5) {
+					ScoreW++;
+                    //printf("White\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 15) {
-					ScoreY[i]++;
-					ScoreW[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 15) {
+					ScoreY++;
+					ScoreW++;
+                    //printf("Yellow\n\n");
+                    //printf("White\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 30) {
-					ScoreY[i]++;
-					ScoreW[i]++;
-					ScoreR[i]++;
+				else if (MyPM[i + t2 + t1 * Width] == 30) {
+					ScoreY++;
+					ScoreW++;
+					ScoreR++;
+                    //printf("Red\n\n");
+                    //printf("Yellow\n\n");
+                    //printf("White\n\n");
 				}
-				else if (PotBall[i + t2 + t1 * Width] == 0) {
+				else if (MyPM[i + t2 + t1 * Width] == 0) {
 					continue;
 				}
 				else {
-					printf("Error assigning Score");
+					/*printf("Error assigning Score");*/
 				}
 			}
 		}
-		if (MaxR[1] < ScoreR[i]) {
+		if (MaxR[1] < ScoreR) {
 			MaxR[0] = i;
-			MaxR[1] = ScoreR[i];
+			MaxR[1] = ScoreR;
+            //printf("Max Red: %d\n\n", ScoreR);
 		}
 
-		else if (MaxW[1] < ScoreW[i]) {
+		else if (MaxW[1] < ScoreW) {
 			MaxW[0] = i;
-			MaxW[1] = ScoreW[i];
+			MaxW[1] = ScoreW;
+            //printf("Max White: %d\n\n", ScoreW);
 		}
 
-		else if (MaxY[1] < ScoreY[i]) {
+		else if (MaxY[1] < ScoreY) {
 			MaxY[0] = i;
-			MaxY[1] = ScoreY[i];
+			MaxY[1] = ScoreY;
+            //printf("Max Yellow: %d\n\n", ScoreY);
 		}
 
 		else {
@@ -141,6 +156,8 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 	*ScoreMaxR = MaxR[1];
 	*ScoreMaxY = MaxY[1];
 	*ScoreMaxW = MaxW[1];
+
+    printf("IsBallDone");
 
 }
 
@@ -189,9 +206,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Determine the size of the file
-	fseek(file, 0, SEEK_END);
+	fseek(file, 0L, SEEK_END);
 	long int file_size = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	fseek(file, 0L, SEEK_SET);
 
 	// Allocate memory for the MyPM
 	int *MyPM = malloc(file_size);
@@ -266,10 +283,10 @@ int main(int argc, char *argv[]) {
 
 	//ERROR_TEST : Check si le nombre de pixels correspond au nombre de valeurs de myPM
 
-	size_t Numberofvalues = sizeof(*MyPM) / sizeof(MyPM[0]);
-	int NumberOfPixels = Width * Height;
+	size_t Numberofvalues = sizeof(*MyPM) / sizeof(MyPM[6]);
+	const int NumberOfPixels = Width * Height;
 
-	printf("La hauteur de la table est de %d pixels", Width);
+	/*printf("La hauteur de la table est de %d pixels", Width);
 	printf("\n\nLa largeur de la table est de %d pixels", Height);
 
 	if (Numberofvalues == NumberOfPixels)
@@ -282,7 +299,7 @@ int main(int argc, char *argv[]) {
 		printf("\nIl y a %d pixels manquants !\n", diff);
 		return -1 ;
 	}
-    
+    */
 
 	IsColor(BallredRmin, BallredRmax, BallredGmin, BallredGmax, BallredBmin, BallredBmax,
 		BallyellowRmin, BallyellowRmax, BallyellowGmin, BallyellowGmax, BallyellowBmin, BallyellowBmax,
@@ -305,9 +322,9 @@ int main(int argc, char *argv[]) {
 		return -1  ;
 	}
 
-	printf("Red: %d, %d, %d", Xr, Yr, ScoreMaxR);
-	printf("\nYellow: %d, %d, %d", Xy, Yy, ScoreMaxY);
-	printf("\nWhite: %d, %d, %d", Xw, Yw, ScoreMaxW);
+	printf("Red: %d, %d, %d\n\n\n", Xr, Yr, ScoreMaxR);
+	printf("\nYellow: %d, %d, %d\n\n\n", Xy, Yy, ScoreMaxY);
+	printf("\nWhite: %d, %d, %d\n\n\n", Xw, Yw, ScoreMaxW);
 
 	if(fclose(f_out))
 	perror("Erreur fermeture fichier de sortie");
