@@ -43,17 +43,18 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 
 	int count;
 
-	int ScoreR, ScoreY, ScoreW, MaxR[2], MaxY[2], MaxW[2];
+	int ScoreR, ScoreY, ScoreW, MaxR[2]= {0,0}, MaxY[2]= {0,0}, MaxW[2]= {0,0};
+    
 
-    printf("Number of Pixels: %d\n\n\n", NumberOfPixels);
+    printf("Number of Pixels: %d", NumberOfPixels);
 
 	for (int i = 0; i < NumberOfPixels; i++) {
         //printf("%d\n\n", i);
         ScoreR = 0;
         ScoreW = 0;
         ScoreY = 0;
-		for (int t1 = 0; t1 <= BallSize; t1++) {
-			for (int t2 = 0; t2 <= BallSize; t2++) {
+		for (int t1 = 0; t1 < BallSize; t1++) {
+			for (int t2 = 0; t2 < BallSize; t2++) {
 				if (MyPM[i + t2 + t1 * Width] == 2) {
 					ScoreR++;
                     //printf("Red\n\n");
@@ -103,24 +104,21 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 		if (MaxR[1] < ScoreR) {
 			MaxR[0] = i;
 			MaxR[1] = ScoreR;
-            //printf("Max Red: %d\n\n", ScoreR);
+            printf("Max Red: %d\n\n", ScoreR);
 		}
 
-		else if (MaxW[1] < ScoreW) {
+		if (MaxW[1] < ScoreW) {
 			MaxW[0] = i;
 			MaxW[1] = ScoreW;
-            //printf("Max White: %d\n\n", ScoreW);
+            printf("Max White: %d et i: %d \n\n", ScoreW, i);
 		}
 
-		else if (MaxY[1] < ScoreY) {
+		if (MaxY[1] < ScoreY) {
 			MaxY[0] = i;
 			MaxY[1] = ScoreY;
-            //printf("Max Yellow: %d\n\n", ScoreY);
+            printf("Max Yellow: %d\n\n", ScoreY);
 		}
 
-		else {
-            continue;
-		}
 	}
 
 	*Yr = MaxR[0] % Height;
@@ -130,9 +128,6 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 		*Xr = *Xr + 1;
 	} while (MaxR[0] >= 0);
 
-    *Xr = *Xr + BallSize/2;
-    *Yr = *Yr + BallSize/2;
-
     *Yw = MaxW[0] % Height;
 	*Xw = 0;
 	do {
@@ -140,8 +135,6 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 		*Xw = *Xw + 1;
 	} while (MaxW[0] >= 0);
 
-    *Xw = *Xw + BallSize/2;
-    *Yw = *Yw + BallSize/2;
 
     *Yy = MaxY[0] % Height;
 	*Xy = 0;
@@ -150,8 +143,6 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 		*Xy = *Xy + 1;
 	} while (MaxY[0] >= 0);
 
-    *Xy = *Xy + BallSize/2;
-    *Yy = *Yy + BallSize/2;
 
 	*ScoreMaxR = MaxR[1];
 	*ScoreMaxY = MaxY[1];
@@ -301,10 +292,7 @@ int main(int argc, char *argv[]) {
 	}
     */
 
-	IsColor(BallredRmin, BallredRmax, BallredGmin, BallredGmax, BallredBmin, BallredBmax,
-		BallyellowRmin, BallyellowRmax, BallyellowGmin, BallyellowGmax, BallyellowBmin, BallyellowBmax,
-		BallwhiteRmin, BallwhiteRmax, BallwhiteGmin, BallwhiteGmax, BallwhiteBmin, BallwhiteBmax,
-		BallSize, NumberOfPixels, MyPM);
+	IsColor(BallredRmin, BallredRmax, BallredGmin, BallredGmax, BallredBmin, BallredBmax, BallyellowRmin, BallyellowRmax, BallyellowGmin, BallyellowGmax, BallyellowBmin, BallyellowBmax, BallwhiteRmin, BallwhiteRmax, BallwhiteGmin, BallwhiteGmax, BallwhiteBmin, BallwhiteBmax, BallSize, NumberOfPixels, MyPM);
 
 	IsBall(BallSize, NumberOfPixels, MyPM, Width, Height, &ScoreMaxR, &ScoreMaxY, &ScoreMaxW, &Xr, &Yr, &Xw, &Yw, &Xy, &Yy);
 
