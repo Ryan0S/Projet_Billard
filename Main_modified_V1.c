@@ -3,52 +3,70 @@
 #include <errno.h>
 #include <stdlib.h>
 
-
-int IsColor(int BallredRmin, int BallredRmax, int BallredGmin, int BallredGmax, int BallredBmin, int BallredBmax, int BallyellowRmin, int BallyellowRmax, int BallyellowGmin, int BallyellowGmax, int BallyellowBmin, int BallyellowBmax, int BallwhiteRmin, int BallwhiteRmax, int BallwhiteGmin, int BallwhiteGmax, int BallwhiteBmin, int BallwhiteBmax, int BallSize, int NumberOfPixels, int MyPM[]) {
+//validé normalement
+void IsColor(int BallredRmin, int BallredRmax, int BallredGmin, int BallredGmax, int BallredBmin, int BallredBmax, int BallyellowRmin, int BallyellowRmax, int BallyellowGmin, int BallyellowGmax, int BallyellowBmin, int BallyellowBmax, int BallwhiteRmin, int BallwhiteRmax, int BallwhiteGmin, int BallwhiteGmax, int BallwhiteBmin, int BallwhiteBmax, int BallSize, int NumberOfPixels, int MyPM[]) {
 
 	int RGBint, Blue, Green, Red;
-	int Out = 1;
+    int Out;
 
 	for (int i = 0; i < NumberOfPixels; i++) {
-		RGBint = MyPM[i];
-		Blue = RGBint & 255;
-		Green = (RGBint >> 8) & 255;
-		Red = (RGBint >> 16) & 255;
 
+        // RGB se fait bien traduir
+        //printf(" Balls:%d", MyPM[i]);
+		RGBint = *(MyPM +i);
+        Red = (RGBint & 0x00FF0000) >> 16;
+        Green = (RGBint & 0x0000FF00) >> 8;
+        Blue = (RGBint & 0x000000FF);
+        Out = 1;
+        //printf("%d   ",i);
+        //printf("%d RED %d GREEN %d BLUE \n\n\n\n", Red, Green, Blue);
+
+        if(Red == 254 && Green == 216 && Blue == 111){
+        printf("\n\n\n\nFOUND\n\n\n\n");
+        }
 
 		if (Red >= BallredRmin && Red <= BallredRmax && Green >= BallredGmin && Green <= BallredGmax && Blue >= BallredBmin && Blue <= BallredBmax) {
 			Out = 2;
+            //printf("%d   ",i);
+            //printf("%d RED %d GREEN %d BLUE \n\n\n\n", Red, Green, Blue);
 		}
 
 		if (Red >= BallyellowRmin && Red <= BallyellowRmax && Green >= BallyellowGmin && Green <= BallyellowGmax && Blue >= BallyellowBmin && Blue <= BallyellowBmax) {
 			Out = Out * 3;
+            //printf("%d   ",i);
+            printf("%d RED %d GREEN %d BLUE \n\n\n\n", Red, Green, Blue);
 		}
 
 		if (Red >= BallwhiteRmin && Red <= BallwhiteRmax && Green >= BallwhiteGmin && Green <= BallwhiteGmax && Blue >= BallwhiteBmin && Blue <= BallwhiteBmax) {
 			Out = Out * 5;
+            //printf("%d   ",i);
+            //printf("%d RED %d GREEN %d BLUE \n\n\n\n", Red, Green, Blue);
 		}
 
 		if (Out == 1) {
 			Out = 0;
 		}
 
-		MyPM[i] = Out;
+
+		MyPM[i]= Out;
 
 	}
-	return *MyPM;
+
+    //printf("cock but again: %d", MyPM[31782]);
 }
 
 void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height, int* ScoreMaxR, int* ScoreMaxY, int* ScoreMaxW, int* Xr, int* Yr, int* Xw, int* Yw, int* Xy, int* Yy) {
 
 
 	int count;
+    count = NumberOfPixels - (BallSize * Width) + 1;
 
-	int ScoreR, ScoreY, ScoreW, MaxR[2]= {0,0}, MaxY[2]= {0,0}, MaxW[2]= {0,0};
+	int ScoreR=0, ScoreY=0, ScoreW=0, MaxR[2]= {0,0}, MaxY[2]= {0,0}, MaxW[2]= {0,0};
     
 
-    printf("Number of Pixels: %d", NumberOfPixels);
+    //printf("Number of Pixels: %d", NumberOfPixels);
 
-	for (int i = 0; i < NumberOfPixels; i++) {
+	for (int i = 0; i < count; i++) {
         //printf("%d\n\n", i);
         ScoreR = 0;
         ScoreW = 0;
@@ -58,6 +76,7 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 				if (MyPM[i + t2 + t1 * Width] == 2) {
 					ScoreR++;
                     //printf("Red\n\n");
+                    //printf("sugma:%d\n\n",MyPM[i + t2 + t1 * Width]);
 				}
 				else if (MyPM[i + t2 + t1 * Width] == 6) {
 					ScoreR++;
@@ -76,7 +95,7 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
                     //printf("Yellow\n\n");
 				}
 				else if (MyPM[i + t2 + t1 * Width] == 5) {
-					ScoreW++;
+					//ScoreW++;
                     //printf("White\n\n");
 				}
 				else if (MyPM[i + t2 + t1 * Width] == 15) {
@@ -104,19 +123,20 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 		if (MaxR[1] < ScoreR) {
 			MaxR[0] = i;
 			MaxR[1] = ScoreR;
-            printf("Max Red: %d\n\n", ScoreR);
+            //printf("Max Red: %d\n\n", ScoreR);
+            //printf("i: %d\n\n", i);
 		}
 
 		if (MaxW[1] < ScoreW) {
 			MaxW[0] = i;
 			MaxW[1] = ScoreW;
-            printf("Max White: %d et i: %d \n\n", ScoreW, i);
+            //printf("Max White: %d et i: %d \n\n", ScoreW, i);
 		}
 
 		if (MaxY[1] < ScoreY) {
 			MaxY[0] = i;
 			MaxY[1] = ScoreY;
-            printf("Max Yellow: %d\n\n", ScoreY);
+            //printf("Max Yellow: %d\n\n", ScoreY);
 		}
 
 	}
@@ -148,7 +168,7 @@ void IsBall(int BallSize, int NumberOfPixels, int MyPM[], int Width, int Height,
 	*ScoreMaxY = MaxY[1];
 	*ScoreMaxW = MaxW[1];
 
-    printf("IsBallDone");
+    //printf("IsBallDone");
 
 }
 
@@ -190,7 +210,7 @@ int main(int argc, char *argv[]) {
     int ScoreMaxR, ScoreMaxY, ScoreMaxW;
 	int Xr, Yr, Xw, Yw, Xy, Yy;
 
-		FILE *file = fopen("/Users/ryan/Desktop/Tidy/EPFL/Mirror/EPFL/Prog/Pixmap217.bin", "rb"); // Open binary file for reading
+		FILE *file = fopen("/Users/ryan/Desktop/Tidy/EPFL/Mirror/EPFL/Prog/Pixmap218.bin", "rb"); // Open binary file for reading
 	if (file == NULL) {
 		perror("Error opening file");
 		return 1;
@@ -210,7 +230,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Read the contents of the file into the MyPM
-	size_t bytes_read = fread(MyPM, 1, file_size, file);
+	size_t bytes_read = fread(MyPM, 1, file_size , file);
 	if (bytes_read != file_size) {
 		if (ferror(file)) {
 			perror("Error reading file");
@@ -244,6 +264,7 @@ int main(int argc, char *argv[]) {
 	int rectext3 = rectint3 + 5;
 	int rectext4 = rectint4 + 5;
 
+    /*
 	printf("Les ranges de couleurs sont\n");
 	printf("             Rmin.. max     Gmin.. max     Bmin.. max\n");
 	printf("Ballred      %d..%d          %d..%d         %d..%d\n", BallredRmin, BallredRmax, BallredGmin, BallredGmax, BallredBmin, BallredBmax);
@@ -257,11 +278,13 @@ int main(int argc, char *argv[]) {
 
 
 	printf("Les boules ont un diamètre de %d pixels\n\n", BallSize);
-
     
+    */
 
 	int Width = rectext2 - rectext1;
 	int Height = rectext4 - rectext3;
+
+    printf("W: %d, H: %d", Width, Height);
 
 	//ERROR_TEST: Check si la hauteur ou la largeur de la table est en dehors de la zone [100,1000]
 
@@ -293,6 +316,9 @@ int main(int argc, char *argv[]) {
     */
 
 	IsColor(BallredRmin, BallredRmax, BallredGmin, BallredGmax, BallredBmin, BallredBmax, BallyellowRmin, BallyellowRmax, BallyellowGmin, BallyellowGmax, BallyellowBmin, BallyellowBmax, BallwhiteRmin, BallwhiteRmax, BallwhiteGmin, BallwhiteGmax, BallwhiteBmin, BallwhiteBmax, BallSize, NumberOfPixels, MyPM);
+
+
+    //printf("cock: %d", MyPM[31782]);
 
 	IsBall(BallSize, NumberOfPixels, MyPM, Width, Height, &ScoreMaxR, &ScoreMaxY, &ScoreMaxW, &Xr, &Yr, &Xw, &Yw, &Xy, &Yy);
 
