@@ -307,13 +307,12 @@ if(argc != Error.NumberOfInputs + 1){
         return 1;
     }
     if(Image.Length * Image.Height < num_integers - 2){
-        printf("Trop de pixels\n");
+        perror("Trop de pixels\n");
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
     Table.FirstPixel = Table.BottomBorder * Image.Length + Table.LeftBorder;
     Table.LastPixel = (Table.TopBorder - Table.BallSize)*Image.Length + Table.RightBorder - Table.BallSize;
-	printf("%d",Table.FirstPixel);
 
     //INITIALISE DEFAULT VALUES FOR THE BALLS' SCORE AND COORDINATES
     RedBall.Score = 0;
@@ -348,19 +347,19 @@ if(argc != Error.NumberOfInputs + 1){
         RedBall.Score = 0;
         RedBall.X_Coordinate = -1;
         RedBall.Y_coordinate = -1;
-        printf("La boule rouge n'a pas était trouvée");
+        perror("La boule rouge n'a pas était trouvée");
     };
     if(YellowBall.Score < Error.BallMinScore){
         YellowBall.Score = 0;
         YellowBall.X_Coordinate = -1;
         YellowBall.Y_coordinate = -1;
-        printf("La boule jaune n'a pas était trouvée");
+        perror("La boule jaune n'a pas était trouvée");
     };
     if(WhiteBall.Score < Error.BallMinScore){
         WhiteBall.Score = 0;
         WhiteBall.X_Coordinate = -1;
         WhiteBall.Y_coordinate = -1;
-        printf("La boule blanche n'a pas était trouvée");
+        perror("La boule blanche n'a pas était trouvée");
     };
 	
 
@@ -375,3 +374,4 @@ if(argc != Error.NumberOfInputs + 1){
 	return 0;
 #pragma endregion
 }
+
