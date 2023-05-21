@@ -1,24 +1,24 @@
 function [Xmin, Xmax, Ymin, Ymax] = GetFrame(Xr,Yr,Xy,Yy,Xw,Yw)
 
-% trouver le min de X
+%Find the smallest value of X
 Xrmin = min(Xr);
 Xymin = min(Xy);
 Xwmin = min(Xw);
 Xmin = min([Xrmin Xymin Xwmin]);
 
-% trouver le max de X
+%find the biggest value of X
 Xrmax = max(Xr);
 Xymax= max(Xy);
 Xwmax = max(Xw);
 Xmax = max([Xrmax Xymax Xwmax]);
 
-% Trouver le min de Y
+%Find the smallest value of Y
 Yrmin = min(Yr);
 Yymin = min(Yy);
 Ywmin = min(Yw);
 Ymin = min([Yrmin Yymin Ywmin]);
 
-% trouver le max de Y
+%find the biggest value of Y
 Yrmax = max(Yr);
 Yymax = max(Yy);
 Ywmax = max(Yw);
