@@ -1,10 +1,13 @@
 function PathLength=GetBallPathLength(X,Y)
-% Que faire ?
-% Faire la somme des normes des veceturs entre chaque point 2 à 2
 
-X1=diff(X);% diff : différence d'éléments successifs 2 à 2
-Y1=diff(Y);% et les rend sous forme de matrice
+%Compute the difference between each succesive value of X and Y
+X1=diff(X);
+Y1=diff(Y);
+
+%Use Pythagorean theorem to find the distance the ball moved between each succesive frame
 S=sqrt(X1.^2+Y1.^2);
+
+%Sum all of the individual movement to find the total pathlength
 PathLength=sum(S);
 
 end
