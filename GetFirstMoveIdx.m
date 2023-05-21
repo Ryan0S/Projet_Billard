@@ -1,18 +1,21 @@
 function [FirstMoveIdx, Dist]=GetFirstMoveIdx(X,Y, MoveDistPx)
 
-%PARTIE 1
+%difference inbetween the first value of X and all the other values of X
+dx = X(1)-X;
 
-S1 = X(1)-X;%différence entre la première valeur de X et toutes les autres
-S2 = Y(1)-Y;%différence entre la première valeur de Y et toutes les autres
+%difference inbetween the first value of Y and all the other values of Y
+dy = Y(1)-Y;
 
-S = sqrt(S1.^2 + S2.^2);%faire la norme de ces valeurs
+%Compute the actual move distance using Pythagorean theroem
+S = sqrt(dx.^2 + dy.^2);
 
-cbt = find(S > MoveDistPx);%matrice remplie des indices des frames auxquelles les boules bougent
+%Creates a temporary matrix with all of the frames where the ball is further than MoveDistPx from its initial postion
+TempMatrix = find(S > MoveDistPx);
 
-FirstMoveIdx = cbt(1)%premier élément de cette matrice
+%Finds the first frame where the ball moved enough
+FirstMoveIdx = TempMatrix(1);
 
-%PARTIE 2
-
+%compute initial move distance
 Dist = sqrt((X(FirstMoveIdx)-X(FirstMoveIdx-1))^2+(Y(FirstMoveIdx)-Y(FirstMoveIdx-1)^2);
 
 end
