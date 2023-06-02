@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 struct BallInformation {
     unsigned int RedMin;
@@ -39,6 +40,7 @@ struct ImageInformation{
 }Image;
 
 struct ErrorManagement {
+	int DeBug;
     int RGBMin;
     int RGBMax;
     int NumberOfInputs;
@@ -77,7 +79,6 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 		//OUT IS THE NEW VALUE ASSIGNED TO THE ELEMENTS IN MyPM
 		Out = 1;
 		
-
 		if (Red >= RedBall.RedMin && Red <= RedBall.RedMax && Green >= RedBall.GreenMin && Green <= RedBall.GreenMax && Blue >= RedBall.BlueMin && Blue <= RedBall.BlueMax) {
 			Out = 2;
 		}
@@ -88,6 +89,9 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 
 		if (Red >= WhiteBall.RedMin && Red <= WhiteBall.RedMax && Green >= WhiteBall.GreenMin && Green <= WhiteBall.GreenMax && Blue >= WhiteBall.BlueMin && Blue <= WhiteBall.BlueMax) {
 			Out = Out * 5;
+		}
+		if (Red >= Table.RedMin && Red <= Table.RedMax && Green >= Table.GreenMin && Green <= Table.GreenMax && Blue >= Table.BlueMin && Blue <= Table.BlueMax) {
+			Out = Out * 7;
 		}
 		if (Out == 1) {
 			Out = 0;
@@ -100,7 +104,6 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 
 	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 };
 	int k = 1;
-    int X,Y;
 
 	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
 		ScoreR = 0;
@@ -112,6 +115,10 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 				i = i + Table.BallSize - 1 + Image.Length - Table.RightBorder + Table.LeftBorder;
 			}
 			else k++;
+
+			if(MyPM[i + Table.BallSize/2 + Image.Length * Table.BallSize/2] == 7){
+				continue;
+			}
 
 		for (int t1 = 0; t1 < Table.BallSize; t1++) {
 			for (int t2 = 0; t2 < Table.BallSize; t2++) {
@@ -182,6 +189,7 @@ Error.TableHeightMax = 1000;
 Error.TableHeightMin = 100;
 Error.TableLengthMax = 1000;
 Error.TableLengthMin = 100;
+Error.DeBug = 0;
 #pragma endregion
 
 #pragma region //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
@@ -244,7 +252,7 @@ if(argc != Error.NumberOfInputs + 1){
 
 #pragma region //OPEN Pixmap.bin AND STORES IT IN MyPM
     //OPEN Pixmap.bin FOR READING
-	FILE *file = fopen("/Users/ryan/Desktop/Tidy/EPFL/Mirror/EPFL/Prog/Pixmap217.bin", "rb");
+	FILE *file = fopen("Pixmap217.bin", "rb");
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
@@ -327,8 +335,13 @@ if(argc != Error.NumberOfInputs + 1){
 #pragma endregion
 
 #pragma region //FUNCTION CALLING
+    clock_t t;
+    t = clock();
 	IsColor(RedBall, YellowBall, WhiteBall, Table, MyPM);
-	IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM);
+    IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM);
+    t = clock() - t;
+    double time_taken; 
+	time_taken = ((double)t)/CLOCKS_PER_SEC;// in seconds
 #pragma endregion
 
 #pragma region //CREATE POX.TXT FILE
@@ -369,9 +382,23 @@ if(argc != Error.NumberOfInputs + 1){
 	fprintf(f_out,"White: %d, %d, %d", WhiteBall.X_Coordinate, WhiteBall.Y_coordinate, WhiteBall.Score);
 #pragma endregion
 
+#pragma region //DEBUG
+	if(Error.DeBug == 1){
+		//OPENS Pos.txt IN WRITE MODE
+		FILE *DebugFile = fopen("Debug.txt", "w");
+
+		//ERROR_TEST: CHECKS IF Pos.txt WAS OPENED
+		if (DebugFile == NULL)
+		{
+			perror("Error Opening Pos.txt");
+			return 1;
+		}
+		fprintf(DebugFile,"\n\nIsBall took %lf seconds to execute \n", time_taken);
+	}
+#pragma endregion
+
 #pragma region //FREE THE MEMORY ALLOCATED TO MyPM
 	free(MyPM);
 	return 0;
 #pragma endregion
 }
-
