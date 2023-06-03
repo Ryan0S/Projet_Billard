@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 struct BallInformation {
     unsigned int RedMin;
@@ -82,6 +83,21 @@ struct DebugManagement{
 	int SkipCountType1;
 	int SkipCountType2;
 } Debug = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+int isNumber(char number[])
+{
+    int i = 0;
+    //checking for negative numbers
+    if (number[0] == '-')
+        i = 1;
+    for (; number[i] != 0; i++)
+    {
+        //if (number[i] > '9' || number[i] < '0')
+        if (isdigit(number[i]) != 1)
+            return 0;
+    }
+    return 1;
+}
 
 void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, struct BallInformation WhiteBall, struct TableInformation Table, unsigned int MyPM[], struct DebugManagement *Debug) {
 	//INITIALISE LOCAL VARIABLES
@@ -300,6 +316,8 @@ Error.TableHeightMin = 100;
 Error.TableLengthMax = 1000;
 Error.TableLengthMin = 100;
 Debug.Status = 1;
+Error.RGBMin = 0;
+Error.RGBMax = 255;
 
 #pragma endregion
 
@@ -310,8 +328,16 @@ if(argc != Error.NumberOfInputs + 1){
     return 1;
 }
 
+//ERROR_TEST: CHECKS THAT ALL VALUES ARE NUMBERS
+for(int j=1; j <= Error.NumberOfInputs; j++){
+	int Res;
+	Res = isNumber(argv[j]);
+	if (Res != 1){
+		perror("Inputs must be numbers");
+	}
+}
+
 //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
-//const char* nom_fichier = argv[0];
 	Table.BottomBorder = atoi(argv[1]);
 	Table.TopBorder = atoi(argv[2]);
 	Table.LeftBorder = atoi(argv[3]);
@@ -359,6 +385,12 @@ if(argc != Error.NumberOfInputs + 1){
 		perror("La longueur et/ou la hauteur de la table est en dehors de la zone acceptable");
 		return 1;
     }
+	//ERROR_TEST:CHECKS THAT RGB VALUES ARE IN RGB RANGE: 0-255
+	for(int j = 5; j<=28; j++){
+		if(atoi(argv[j])< Error.RGBMin || atoi(argv[j])> Error.RGBMax){
+			perror("Values 5-28 must be RGB values");
+		}
+	}
 	#pragma endregion
 
 #pragma region //OPEN Pixmap.bin AND STORES IT IN MyPM
