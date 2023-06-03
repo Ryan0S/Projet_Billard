@@ -84,15 +84,17 @@ struct DebugManagement{
 	int SkipCountType2;
 } Debug = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-int isNumber(char number[])
-{
+int IsNumber(char number[]){
+	//TLDR: CHECKS IF AN ARRAY OF CHARACTERS ARE ACTUALLY NUMBERS
+
+	// INPUTS:  - ARRAY OF CHARACTERS(char number[])
+
+	// OUTPUTS: - INT: 1 IF IT IS A NUMBER, 0 IF IT IS NOT A NUMBER
     int i = 0;
-    //checking for negative numbers
     if (number[0] == '-')
         i = 1;
     for (; number[i] != 0; i++)
     {
-        //if (number[i] > '9' || number[i] < '0')
         if (isdigit(number[i]) != 1)
             return 0;
     }
@@ -100,14 +102,24 @@ int isNumber(char number[])
 }
 
 void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, struct BallInformation WhiteBall, struct TableInformation Table, unsigned int MyPM[], struct DebugManagement *Debug) {
-	//INITIALISE LOCAL VARIABLES
+	//TLDR: TAKES A ARRAY OF HEX RGB VALUES AND COMPARES THE VALUES WITH GIVEN RGB RANGES
+
+	// INPUTS:  - RGB RANGES OF ALL THREE BALLS(RedBall, YellowBall, WhiteBall)
+	//          - TABLE INFORMATION (TABLE)
+	//          - HEX ARRAY TO BE CONVERTED (MyPM[])
+	//  		- DEBUGGING MANAGEMENT (DEBUG)
+
+	// OUTPUTS: - NO OUTPUTS BUT CHANGES VALUES IN ORIGINAL ARRAY(MyPM[])
+
+
+	//DECLARE LOCAL VARIABLES
 	int RGBint, Blue, Green, Red, Out;
 	int k = 1;
-
 
 	//FOR LOOP TO CYCLE THROUGH ALL OF THE TABLE'S PIXELS 
 	for (int i = Table.FirstPixel - 1; i < Table.LastPixel + (Image.Length * Table.BallSize); i++) {
 
+		//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 		if (k == Table.RightBorder - Table.LeftBorder + 1) {
 				k = 1;
 				i = i - 1 + Image.Length - Table.RightBorder + Table.LeftBorder;
@@ -122,6 +134,8 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 
 		//OUT IS THE NEW VALUE ASSIGNED TO THE ELEMENTS IN MyPM
 		Out = 1;
+
+		//CHECKS IF PIXELS IS IN A GIVEN RGB RANGE CHANGES OUT ACCORDINGLY
 		if (Red >= RedBall.RedMin && Red <= RedBall.RedMax && Green >= RedBall.GreenMin && Green <= RedBall.GreenMax && Blue >= RedBall.BlueMin && Blue <= RedBall.BlueMax) {
 			Out = Out * 2;
 			(*Debug).RedCount++;
@@ -145,49 +159,66 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 			Out = 0;
 			(*Debug).NeitherCount++;
 		}
+
+		//REPLACES MyPM[] RGB VALUES WITH OUT VALUES
 		MyPM[i] = Out;
 	}
 }
 
 void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall, struct BallInformation *WhiteBall, struct TableInformation Table, struct ImageInformation Image, unsigned int MyPM[], struct DebugManagement *Debug) {
+	//TLDR: TAKES AN ARRAY OF INTEGERS WHICH REPRESENT SPECIAL COLORS AND FINDS THE BOX WHICH CONTAINS THE LARGEST AMOUNT OF A GIVEN COLOR
 
+	// INPUTS:  - ACCES TO VARIABLES WHICH DEFINES ALL THREE BALLS' MAXIMUM SCORE(RedBall, YellowBall, WhiteBall)
+	//			- IMAGE INFORMATION (IMAGE)
+	//          - TABLE INFORMATION (TABLE)
+	//          - ARRAY OF INTEGERS WHICH REPRESENT SPECIAL COLORS (MyPM[])
+	//  		- DEBUGGING MANAGEMENT (DEBUG)
+
+	// OUTPUTS: - NO OUTPUTS BUT CHANGES VALUES FOR ALL THREE BALLS(RedBall, YellowBall, WhiteBall)
+
+	//DECLARE LOCAL VARIABLES
 	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 }, k = 1;;
 
+	//FOR LOOP TO MOVE THE BOX YOUR LOOKING AT
 	for (int i = Table.FirstPixel - 1; i < Table.LastPixel - (Table.BallSize * Image.Length); i++) {
 		ScoreR = 0;
 		ScoreW = 0;
 		ScoreY = 0;
 		int State = 12;
 		
+			//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 			if (k == Table.RightBorder - Table.LeftBorder - Table.BallSize + 1) {
 				k = 1;
 				i = i + Table.BallSize - 1 + Image.Length - Table.RightBorder + Table.LeftBorder;
 			}
 			else k++;
 
+			//OPTIMISATION: IF THE PIXELS IN THE MIDDLE OF THE BOX IS THE SAME COLOR AS THE TABLE CONTINUE TO NEXT SQUARE
 			if(MyPM[i + (Table.BallSize/2) + Image.Length * (Table.BallSize/2)] == 7 ||MyPM[i + (Table.BallSize/2) + Image.Length * (Table.BallSize/2 )+1] == 7 ||MyPM[i + (Table.BallSize/2) + Image.Length * (Table.BallSize/2)-1] == 7 ||MyPM[i + (Table.BallSize/2) + Image.Length * (Table.BallSize/2)+Image.Length] == 7){
 				(*Debug).SkipCountType1++;
 				continue;
 			}
 
+		//FOR LOOP GO FROM TOP TO BOTTOM IN A SQUARE
 		for (int t1 = 0; t1 < Table.BallSize; t1++) {
+
+			//OPTIMISATION: IF THE AMOUNT OF PIXELS LEFT TO LOOK AT IN A SQUARE IS SMALLER THAN THE DIFFERENCE BETWEEN THE MAX SCORE AND CURRENT SCORE CONTINUE TO NEXT SQUARE
 			if(State != 3 && State != 7 && State != 10 && State != 0 && (Table.BallSize * Table.BallSize) - (t1 * Table.BallSize) < MaxR[1]-ScoreR){
 				(*Debug).SkipCountType2++;
 				State = State - 2;
 			}
-
 			//if(State != 3 && State != 2 && State != 5 && State != 0 && (Table.BallSize * Table.BallSize) - (t1 * Table.BallSize) < MaxW[1]-ScoreW){
 			//	(*Debug).SkipCountType2++;
 			//	State = State - 7;
 			//}
-
 			if(State != 2 && State != 7 && State != 9 && State != 0 && (Table.BallSize * Table.BallSize) - (t1 * Table.BallSize) < MaxY[1]-ScoreY){
 				(*Debug).SkipCountType2++;
 				State = State - 3;
 			}
-
+			//FOR LOOP GO FROM LEFT TO RIGHT IN A SQUARE
 			for (int t2 = 0; t2 < Table.BallSize; t2++) {
 				(*Debug).ScanCount++;
+				//SWITCH TO ONLY LOOK FOR BALLS THAT CAN BE IN A GIVEN SQUARE
 				switch(State){
 					case 2:
 						if (MyPM[i + t2 + t1 * Image.Length] == 2 || MyPM[i + t2 + t1 * Image.Length] == 14){
@@ -331,7 +362,7 @@ if(argc != Error.NumberOfInputs + 1){
 //ERROR_TEST: CHECKS THAT ALL VALUES ARE NUMBERS
 for(int j=1; j <= Error.NumberOfInputs; j++){
 	int Res;
-	Res = isNumber(argv[j]);
+	Res = IsNumber(argv[j]);
 	if (Res != 1){
 		perror("Inputs must be numbers");
 	}
