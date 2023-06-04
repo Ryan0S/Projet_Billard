@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
 
 struct BallInformation {
     unsigned int RedMin;
@@ -15,12 +17,18 @@ struct BallInformation {
 } RedBall, YellowBall, WhiteBall;
 
 struct TableInformation {
-    int RedMin;
-    int RedMax;
-    int GreenMin;
-    int GreenMax;
-    int BlueMin;
-    int BlueMax;
+    int LightBlueRedMin;
+    int LightBlueRedMax;
+    int LightBlueGreenMin;
+    int LightBlueGreenMax;
+    int LightBlueBlueMin;
+    int LightBlueBlueMax;
+	int DarkBlueRedMin;
+    int DarkBlueRedMax;
+    int DarkBlueGreenMin;
+    int DarkBlueGreenMax;
+    int DarkBlueBlueMin;
+    int DarkBlueBlueMax;
     int FirstPixel;
     int LastPixel;
     int LeftBorder;
@@ -30,6 +38,7 @@ struct TableInformation {
     int Width;
     int Height;
     int BallSize;
+	int BallsMissing;
 }Table;
 
 struct ImageInformation{
@@ -44,10 +53,10 @@ struct ErrorManagement {
     int NumberOfInputs;
     int BallSizeMin;
     int BallSizeMax;
-    int PictureHeightMin;
-    int PictureHeightMax;
-    int PictureLengthMin;
-    int PictureLengthMax;
+    int ImageHeightMin;
+    int ImageHeightMax;
+    int ImageLengthMin;
+    int ImageLengthMax;
     int TableHeightMin;
     int TableHeightMax;
     int TableLengthMin;
@@ -63,89 +72,187 @@ struct ErrorManagement {
     int BallMinScore;
 }Error;
 
-void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, struct BallInformation WhiteBall, struct TableInformation Table, unsigned int MyPM[]) {
-	//INITIALISE LOCAL VARIABLES
+struct DebugManagement{
+	int Status;
+	int LightBlueCount;
+	int DarkBlueCount;
+	int RedCount;
+	int YellowCount;
+	int WhiteCount;
+	int NeitherCount;
+	int ScanCount;
+	int SkipCountType1;
+	int SkipCountType2;
+} Debug = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+int IsNumber(char number[]){
+	//TLDR: CHECKS IF AN ARRAY OF CHARACTERS ARE ACTUALLY NUMBERS
+
+	// INPUTS:  - ARRAY OF CHARACTERS(char number[])
+
+	// OUTPUTS: - INT: 1 IF IT IS A NUMBER, 0 IF IT IS NOT A NUMBER
+    int i = 0;
+    if (number[0] == '-')
+        i = 1;
+    for (; number[i] != 0; i++)
+    {
+        if (isdigit(number[i]) != 1)
+            return 0;
+    }
+    return 1;
+}
+
+void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, struct BallInformation WhiteBall, struct TableInformation Table, unsigned int MyPM[], struct DebugManagement *Debug) {
+	//TLDR: TAKES A ARRAY OF HEX RGB VALUES AND COMPARES THE VALUES WITH GIVEN RGB RANGES
+
+	// INPUTS:  - RGB RANGES OF ALL THREE BALLS(RedBall, YellowBall, WhiteBall)
+	//          - TABLE INFORMATION (TABLE)
+	//          - HEX ARRAY TO BE CONVERTED (MyPM[])
+	//  		- DEBUGGING MANAGEMENT (DEBUG)
+
+	// OUTPUTS: - NO OUTPUTS BUT CHANGES VALUES IN ORIGINAL ARRAY(MyPM[])
+
+
+	//DECLARE LOCAL VARIABLES
 	int RGBint, Blue, Green, Red, Out;
+	int k = 1;
 
 	//FOR LOOP TO CYCLE THROUGH ALL OF THE TABLE'S PIXELS 
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel + (Image.Length * Table.BallSize); i++) {
+
+		//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
+		if (k == Table.RightBorder - Table.LeftBorder + 1) {
+				k = 1;
+				i = i - 1 + Image.Length - Table.RightBorder + Table.LeftBorder;
+			}
+		else k++;
+
 		//CONVERTING THE RGB VALUES FROM BINARY TO BASE 10
 		RGBint = *(MyPM + i);
-		Red = (RGBint & 0x00FF0000) >> 16;
-		Green = (RGBint & 0x0000FF00) >> 8;
-		Blue = (RGBint & 0x000000FF);
+		Blue = RGBint & 255;
+		Green = (RGBint >> 8) & 255;
+		Red = (RGBint >> 16) & 255;
+
 		//OUT IS THE NEW VALUE ASSIGNED TO THE ELEMENTS IN MyPM
 		Out = 1;
-		
 
+		//CHECKS IF PIXELS IS IN A GIVEN RGB RANGE CHANGES OUT ACCORDINGLY
 		if (Red >= RedBall.RedMin && Red <= RedBall.RedMax && Green >= RedBall.GreenMin && Green <= RedBall.GreenMax && Blue >= RedBall.BlueMin && Blue <= RedBall.BlueMax) {
-			Out = 2;
+			Out = Out * 2;
+			(*Debug).RedCount++;
 		}
-
 		if (Red >= YellowBall.RedMin && Red <= YellowBall.RedMax && Green >= YellowBall.GreenMin && Green <= YellowBall.GreenMax && Blue >= YellowBall.BlueMin && Blue <= YellowBall.BlueMax) {
 			Out = Out * 3;
+			(*Debug).YellowCount++;
 		}
-
 		if (Red >= WhiteBall.RedMin && Red <= WhiteBall.RedMax && Green >= WhiteBall.GreenMin && Green <= WhiteBall.GreenMax && Blue >= WhiteBall.BlueMin && Blue <= WhiteBall.BlueMax) {
 			Out = Out * 5;
+			(*Debug).WhiteCount++;
+		}
+		if (Red >= Table.DarkBlueRedMin && Red <= Table.DarkBlueRedMax && Green >= Table.DarkBlueGreenMin && Green <= Table.DarkBlueGreenMax && Blue >= Table.DarkBlueBlueMin && Blue <= Table.DarkBlueBlueMax) {
+			Out = Out * 7;
+			(*Debug).DarkBlueCount++;
 		}
 		if (Out == 1) {
 			Out = 0;
+			(*Debug).NeitherCount++;
 		}
+		//REPLACES MyPM[] RGB VALUES WITH OUT VALUES
 		MyPM[i] = Out;
 	}
 }
 
-void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall, struct BallInformation *WhiteBall, struct TableInformation Table, struct ImageInformation Image, unsigned int MyPM[]) {
+void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall, struct BallInformation *WhiteBall, struct TableInformation Table, struct ImageInformation Image, unsigned int MyPM[], struct DebugManagement *Debug) {
+	//TLDR: TAKES AN ARRAY OF INTEGERS WHICH REPRESENT SPECIAL COLORS AND FINDS THE BOX WHICH CONTAINS THE LARGEST AMOUNT OF A GIVEN COLOR
 
-	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 };
-	int k = 1;
-    int X,Y;
+	// INPUTS:  - ACCES TO VARIABLES WHICH DEFINES ALL THREE BALLS' MAXIMUM SCORE(RedBall, YellowBall, WhiteBall)
+	//			- IMAGE INFORMATION (IMAGE)
+	//          - TABLE INFORMATION (TABLE)
+	//          - ARRAY OF INTEGERS WHICH REPRESENT SPECIAL COLORS (MyPM[])
+	//  		- DEBUGGING MANAGEMENT (DEBUG)
 
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
+	// OUTPUTS: - NO OUTPUTS BUT CHANGES VALUES FOR ALL THREE BALLS(RedBall, YellowBall, WhiteBall)
+
+	//DECLARE LOCAL VARIABLES
+	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 }, k = 1, State;
+
+	//FOR LOOP TO MOVE THE BOX YOUR LOOKING AT
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel- (Table.BallSize * Image.Length); i++) {
 		ScoreR = 0;
 		ScoreW = 0;
 		ScoreY = 0;
+		State = 12;
 		
+			//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 			if (k == Table.RightBorder - Table.LeftBorder - Table.BallSize + 1) {
 				k = 1;
 				i = i + Table.BallSize - 1 + Image.Length - Table.RightBorder + Table.LeftBorder;
 			}
 			else k++;
 
-		for (int t1 = 0; t1 < Table.BallSize; t1++) {
-			for (int t2 = 0; t2 < Table.BallSize; t2++) {
-				if (MyPM[i + t2 + t1 * Image.Length] == 3) {
-					ScoreY++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 6) {
-					ScoreR++;
-					ScoreY++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 10) {
-					ScoreR++;
-					ScoreW++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 2) {
-					ScoreR++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 5) {
-					ScoreW++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 15) {
-					ScoreY++;
-					ScoreW++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 30) {
-					ScoreY++;
-					ScoreW++;
-					ScoreR++;
-				}
-				else if (MyPM[i + t2 + t1 * Image.Length] == 0) {
+			//OPTIMISATION: IF THE PIXELS IN THE MIDDLE OF THE BOX IS THE SAME COLOR AS THE TABLE CONTINUE TO NEXT SQUARE
+			if(Table.BallsMissing == 0){
+				if(MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))] == 7 || MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2 ))+1] == 7 ||MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))-1] == 7 ||MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))+Image.Length] == 7){
+					(*Debug).SkipCountType1++;
 					continue;
 				}
 			}
+		//FOR LOOP GO FROM TOP TO BOTTOM IN A SQUARE
+		for (int t1 = 0; t1 < Table.BallSize; t1++) {
+			//OPTIMISATION: IF THE AMOUNT OF PIXELS LEFT TO LOOK AT IN A SQUARE IS SMALLER THAN THE DIFFERENCE BETWEEN THE MAX SCORE AND CURRENT SCORE CONTINUE TO NEXT SQUARE
+			if(State != 3 && State != 7 && State != 10 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxR[1]-ScoreR){
+				(*Debug).SkipCountType2++;
+				State = State - 2;
+			}
+			if(State != 3 && State != 2 && State != 5 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxW[1]-ScoreW){
+				(*Debug).SkipCountType2++;
+				State = State - 7;
+			}
+			if(State != 2 && State != 7 && State != 9 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxY[1]-ScoreY){
+				(*Debug).SkipCountType2++;
+				State = State - 3;
+			}
+			//FOR LOOP GO FROM LEFT TO RIGHT IN A SQUARE
+			for (int t2 = 0; t2 < Table.BallSize; t2++) {
+				(*Debug).ScanCount++;
+				//SWITCH TO ONLY LOOK FOR BALLS THAT CAN BE IN A GIVEN SQUARE
+				switch(State){
+					case 0:
+						t1 = Table.BallSize;
+						break;
+					default:
+						if(MyPM[i + t2 + t1 * Image.Length] == 3 || MyPM[i + t2 + t1 * Image.Length] == 21) {
+							ScoreY++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 6 || MyPM[i + t2 + t1 * Image.Length] == 42) {
+							ScoreR++;
+							ScoreY++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 10 || MyPM[i + t2 + t1 * Image.Length] == 70) {
+							ScoreR++;
+							ScoreW++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 2 || MyPM[i + t2 + t1 * Image.Length] == 14) {
+							ScoreR++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 5 || MyPM[i + t2 + t1 * Image.Length] == 35) {
+							ScoreW++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 15 || MyPM[i + t2 + t1 * Image.Length]==105) {
+							ScoreY++;
+							ScoreW++;
+						}
+						else if(MyPM[i + t2 + t1 * Image.Length] == 30 || MyPM[i + t2 + t1 * Image.Length]==210) {
+							ScoreY++;
+							ScoreW++;
+							ScoreR++;
+						}
+						break;
+				}
+			}
 		}
+
+	#pragma region //CHECK IF MAX SCORE CHANGED
 		if (MaxR[1] < ScoreR) {
 			MaxR[0] = i;
 			MaxR[1] = ScoreR;
@@ -158,18 +265,20 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 			MaxY[0] = i;
 			MaxY[1] = ScoreY;
 		}
+	#pragma endregion
 	}
 
+	#pragma region //SAVE OUTPUT VALUES
 	(*RedBall).Y_coordinate = MaxR[0] / Image.Length;
 	(*RedBall).X_Coordinate = MaxR[0] % Image.Length - 2;
 	(*WhiteBall).Y_coordinate = MaxW[0] / Image.Length;
 	(*WhiteBall).X_Coordinate = MaxW[0] % Image.Length - 2;
 	(*YellowBall).Y_coordinate = MaxY[0] / Image.Length;
 	(*YellowBall).X_Coordinate = MaxY[0] % Image.Length - 2;
-
 	(*RedBall).Score = MaxR[1];
 	(*YellowBall).Score = MaxY[1];
 	(*WhiteBall).Score = MaxW[1];
+	#pragma endregion
 }
 
 int main(int argc, char *argv[]) {
@@ -182,6 +291,15 @@ Error.TableHeightMax = 1000;
 Error.TableHeightMin = 100;
 Error.TableLengthMax = 1000;
 Error.TableLengthMin = 100;
+Error.ImageHeightMin = 100;
+Error.ImageHeightMax = 1000;
+Error.ImageLengthMin = 100;
+Error.ImageLengthMax = 1000;
+Error.RGBMin = 0;
+Error.RGBMax = 255;
+Table.BallsMissing = 0;
+Debug.Status = 0;
+
 #pragma endregion
 
 #pragma region //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
@@ -191,8 +309,16 @@ if(argc != Error.NumberOfInputs + 1){
     return 1;
 }
 
+//ERROR_TEST: CHECKS THAT ALL VALUES ARE NUMBERS
+for(int j=1; j <= Error.NumberOfInputs; j++){
+	int Res;
+	Res = IsNumber(argv[j]);
+	if (Res != 1){
+		perror("Inputs must be numbers");
+	}
+}
+
 //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
-//const char* nom_fichier = argv[0];
 	Table.BottomBorder = atoi(argv[1]);
 	Table.TopBorder = atoi(argv[2]);
 	Table.LeftBorder = atoi(argv[3]);
@@ -211,16 +337,16 @@ if(argc != Error.NumberOfInputs + 1){
     YellowBall.BlueMax = atoi(argv[16]);
     WhiteBall.RedMin = atoi(argv[17]);
     WhiteBall.RedMax = atoi(argv[18]);
-	WhiteBall.RedMin = atoi(argv[19]);
+	WhiteBall.GreenMin = atoi(argv[19]);
 	WhiteBall.GreenMax = atoi(argv[20]);
 	WhiteBall.BlueMin = atoi(argv[21]);
 	WhiteBall.BlueMax = atoi(argv[22]);
-    Table.RedMin = atoi(argv[23]);
-    Table.RedMax = atoi(argv[24]);
-    Table.GreenMin = atoi(argv[25]);
-    Table.GreenMax = atoi(argv[26]);
-    Table.BlueMin = atoi(argv[27]);
-    Table.BlueMax = atoi(argv[28]);
+    Table.LightBlueRedMin = atoi(argv[23]);
+    Table.LightBlueRedMax = atoi(argv[24]);
+    Table.LightBlueGreenMin = atoi(argv[25]);
+    Table.LightBlueGreenMax = atoi(argv[26]);
+    Table.LightBlueBlueMin = atoi(argv[27]);
+    Table.LightBlueBlueMax = atoi(argv[28]);
     Table.BallSize = atoi(argv[29]);
 	#pragma endregion
 
@@ -240,11 +366,17 @@ if(argc != Error.NumberOfInputs + 1){
 		perror("La longueur et/ou la hauteur de la table est en dehors de la zone acceptable");
 		return 1;
     }
+	//ERROR_TEST:CHECKS THAT RGB VALUES ARE IN RGB RANGE: 0-255
+	for(int j = 5; j<=28; j++){
+		if(atoi(argv[j])< Error.RGBMin || atoi(argv[j])> Error.RGBMax){
+			perror("Values 5-28 must be RGB values");
+		}
+	}
 	#pragma endregion
 
 #pragma region //OPEN Pixmap.bin AND STORES IT IN MyPM
     //OPEN Pixmap.bin FOR READING
-	FILE *file = fopen("/Users/ryan/Desktop/Tidy/EPFL/Mirror/EPFL/Prog/Pixmap217.bin", "rb");
+	FILE *file = fopen("Pixmap217.bin", "rb");
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
@@ -301,6 +433,12 @@ if(argc != Error.NumberOfInputs + 1){
 	Image.Length = MyPM[0];
 	Image.Height = MyPM[1];
 
+	//ERROR_TEST:CHECKS THAT THE IMAGE LENGTH AND HEIGHT IS IN THE APPROPRIATE RANGE
+	if (Image.Height < Error.ImageHeightMin || Image.Height >Error.ImageHeightMax || Image.Length < Error.ImageLengthMin || Image.Length > Error.ImageLengthMax){
+		perror("La longueur et/ou la hauteur de l'image est en dehors de la zone acceptable");
+		return 1;
+    }
+
     //ERROR_TEST: CHECKS IF NUMBER OF PIXELS IN Pixmap.bin IS EQUAL TO THE LENGTH TIMES THE HEIGHT GIVEN IN Pixmap.bin
     if(Image.Length * Image.Height > num_integers - 2){
         perror("Pas assez de pixels");
@@ -311,8 +449,8 @@ if(argc != Error.NumberOfInputs + 1){
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
-    Table.FirstPixel = Table.BottomBorder * Image.Length + Table.LeftBorder;
-    Table.LastPixel = (Table.TopBorder - Table.BallSize)*Image.Length + Table.RightBorder - Table.BallSize;
+    Table.FirstPixel = (Image.Height - Table.TopBorder) * Image.Length + Table.LeftBorder ;
+    Table.LastPixel = Image.Length * (Image.Height - Table.BottomBorder) - (Image.Length - Table.RightBorder);
 
     //INITIALISE DEFAULT VALUES FOR THE BALLS' SCORE AND COORDINATES
     RedBall.Score = 0;
@@ -324,11 +462,41 @@ if(argc != Error.NumberOfInputs + 1){
     WhiteBall.Score = 0;
     WhiteBall.X_Coordinate = 0;
     WhiteBall.Y_coordinate = 0;
+
+	Table.LightBlueRedMax = Table.LightBlueRedMax + 15;
+	Table.LightBlueBlueMin = Table.LightBlueBlueMin - 20;
+
+	Table.DarkBlueRedMin = 0;
+    Table.DarkBlueRedMax = 140;
+    Table.DarkBlueGreenMin = 0;
+    Table.DarkBlueGreenMax = 140;
+    Table.DarkBlueBlueMin = 85;
+    Table.DarkBlueBlueMax = 255;
+
+	//INITIALISE DEFAULT DEBUG VALUES
+	Debug.LightBlueCount = 0;
+	Debug.DarkBlueCount = 0;
+	Debug.RedCount = 0;
+	Debug.WhiteCount = 0;
+	Debug.YellowCount = 0;
+	Debug.ScanCount = 0;
 #pragma endregion
 
 #pragma region //FUNCTION CALLING
-	IsColor(RedBall, YellowBall, WhiteBall, Table, MyPM);
-	IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM);
+    clock_t t;
+	t = clock();
+	IsColor(RedBall, YellowBall, WhiteBall, Table, MyPM, &Debug);
+    IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM, &Debug);
+	t = clock() - t;
+    double time_taken; 
+	time_taken = ((double)t)/CLOCKS_PER_SEC;// in seconds
+
+	//CHECKS IF ALL BALLS WERE FOUND
+    if(Table.BallsMissing == 0 && RedBall.Score < Error.BallMinScore || YellowBall.Score < Error.BallMinScore ||WhiteBall.Score < Error.BallMinScore){
+		Table.BallsMissing = 1;
+		IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM, &Debug);
+    };
+
 #pragma endregion
 
 #pragma region //CREATE POX.TXT FILE
@@ -369,9 +537,42 @@ if(argc != Error.NumberOfInputs + 1){
 	fprintf(f_out,"White: %d, %d, %d", WhiteBall.X_Coordinate, WhiteBall.Y_coordinate, WhiteBall.Score);
 #pragma endregion
 
+#pragma region //DEBUG
+	if(Debug.Status == 1){
+		//OPENS Pos.txt IN WRITE MODE
+		FILE *DebugFile = fopen("Debug.txt", "w");
+
+		//ERROR_TEST: CHECKS IF Pos.txt WAS OPENED
+		if (DebugFile == NULL)
+		{
+			perror("Error Opening Pos.txt");
+			return 1;
+		}
+		fprintf(DebugFile,"Red: 187, 287, 94\n");
+		fprintf(DebugFile,"Yellow: 596, 229, 69\n");
+		fprintf(DebugFile,"White: 169, 113, 116\n\n\n");
+		fprintf(DebugFile,"IsBall took %lf seconds to execute \n", time_taken);
+		fprintf(DebugFile,"BallSize %d \n", Table.BallSize);
+		//fprintf(DebugFile,"Table.LightBlueBlueMin: %d \n", Table.LightBlueBlueMin);
+		//fprintf(DebugFile,"Table.LightBlueBlueMax: %d \n", Table.LightBlueBlueMax);
+		//fprintf(DebugFile,"Table.LightBlueGreenMin: %d \n", Table.LightBlueGreenMin);
+		//fprintf(DebugFile,"Table.LightBlueGreenMax: %d \n", Table.LightBlueGreenMax);
+		//fprintf(DebugFile,"Table.LightBlueRedMin: %d \n", Table.LightBlueRedMin);
+		//fprintf(DebugFile,"Table.LightBlueRedMax: %d \n", Table.LightBlueRedMax);
+		//fprintf(DebugFile,"Light Blue Count: %d \n", Debug.LightBlueCount);
+		//fprintf(DebugFile,"Dark Blue Count: %d \n", Debug.DarkBlueCount);
+		//fprintf(DebugFile,"Red Count: %d \n", Debug.RedCount);
+		//fprintf(DebugFile,"Yellow Count: %d \n", Debug.YellowCount);
+		fprintf(DebugFile,"White Count: %d \n", Debug.WhiteCount);
+		//fprintf(DebugFile,"Neither Count: %d \n", Debug.NeitherCount);
+		fprintf(DebugFile,"Skip Type 1 Count: %d \n", Debug.SkipCountType1);
+		fprintf(DebugFile,"Skip Type 2 Count: %d \n", Debug.SkipCountType2);
+		fprintf(DebugFile,"Scan Count: %d \n", Debug.ScanCount);
+	}
+#pragma endregion
+
 #pragma region //FREE THE MEMORY ALLOCATED TO MyPM
 	free(MyPM);
 	return 0;
 #pragma endregion
 }
-
