@@ -39,6 +39,7 @@ struct TableInformation {
     int Height;
     int BallSize;
 	int BallsMissing;
+	int BluePercent;
 }Table;
 
 struct ImageInformation{
@@ -70,6 +71,7 @@ struct ErrorManagement {
     int BottomBorderMin;
     int BottomBorderMax;
     int BallMinScore;
+	int MinBluePercent;
 }Error;
 
 struct DebugManagement{
@@ -152,6 +154,9 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 		if (Red >= Table.DarkBlueRedMin && Red <= Table.DarkBlueRedMax && Green >= Table.DarkBlueGreenMin && Green <= Table.DarkBlueGreenMax && Blue >= Table.DarkBlueBlueMin && Blue <= Table.DarkBlueBlueMax) {
 			Out = Out * 7;
 			(*Debug).DarkBlueCount++;
+		}
+		if (Red >= Table.LightBlueRedMin && Red <= Table.LightBlueRedMax && Green >= Table.LightBlueGreenMin && Green <= Table.LightBlueGreenMax && Blue >= Table.LightBlueBlueMin && Blue <= Table.LightBlueBlueMax) {
+			(*Debug).LightBlueCount++;
 		}
 		if (Out == 1) {
 			Out = 0;
@@ -298,6 +303,7 @@ Error.ImageLengthMax = 1000;
 Error.RGBMin = 0;
 Error.RGBMax = 255;
 Table.BallsMissing = 0;
+Error.MinBluePercent = 1;
 Debug.Status = 0;
 
 #pragma endregion
@@ -305,7 +311,7 @@ Debug.Status = 0;
 #pragma region //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
 //ERROR_TEST: CHECKS IF THE NUMBER OF ARGUMENTS RECEIVED IS EQUAL TO THE NUMBER OF ARGUMENTS EXPECTED
 if(argc != Error.NumberOfInputs + 1){
-    perror("Pas le bon nombre de paramètres dans la ligne de commande.");
+    fprintf(stderr,"Pas le bon nombre de paramètres dans la ligne de commande.");
     return 1;
 }
 
@@ -314,7 +320,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	int Res;
 	Res = IsNumber(argv[j]);
 	if (Res != 1){
-		perror("Inputs must be numbers");
+		fprintf(stderr,"Inputs must be numbers");
 	}
 }
 
@@ -353,7 +359,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 #pragma region //CHECKING ERRORS RELATED TO VARIABLES INPUT
 	//ERROR_TEST : CHECKS THAT THE BALL SIZE IS IN THE APPROPRIATE RANGE
 	if (Table.BallSize < Error.BallSizeMin || Table.BallSize > Error.BallSizeMax){
-		perror("Le diamètre de la boule est en dehors des valeurs acceptable");
+		fprintf(stderr,"Le diamètre de la boule est en dehors des valeurs acceptable");
 		return 1;
 	}
 
@@ -363,24 +369,24 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
 	//ERROR_TEST:CHECKS THAT THE TABLE LENGTH AND HEIGHT IS IN THE APPROPRIATE RANGE
 	if (Table.Width < Error.TableLengthMin || Table.Width >Error.TableLengthMax || Table.Height < Error.TableHeightMin || Table.Height > Error.TableHeightMax){
-		perror("La longueur et/ou la hauteur de la table est en dehors de la zone acceptable");
+		fprintf(stderr,"La longueur et/ou la hauteur de la table est en dehors de la zone acceptable");
 		return 1;
     }
 	//ERROR_TEST:CHECKS THAT RGB VALUES ARE IN RGB RANGE: 0-255
 	for(int j = 5; j<=28; j++){
 		if(atoi(argv[j])< Error.RGBMin || atoi(argv[j])> Error.RGBMax){
-			perror("Values 5-28 must be RGB values");
+			fprintf(stderr,"Values 5-28 must be RGB values");
 		}
 	}
 	#pragma endregion
 
 #pragma region //OPEN Pixmap.bin AND STORES IT IN MyPM
     //OPEN Pixmap.bin FOR READING
-	FILE *file = fopen("Pixmap217.bin", "rb");
+	FILE *file = fopen("Pixmap218.bin", "rb");
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
-		perror("Error opening file");
+		fprintf(stderr,"Error opening file");
 		return 1;
 	}
 
@@ -397,7 +403,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
     //ERROR_TEST: CHECK IF MEMORY WAS ALLOCATED FOR MyPM
 	if (MyPM == NULL) {
-		perror("Error allocating memory");
+		fprintf(stderr,"Error allocating memory");
 		fclose(file);
 		return 1;
 	}
@@ -408,10 +414,10 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
     //ERROR_TEST: MAKES SURE THAT THE NUMBER OF ELEMENTS READ IS EQUAL TO THE NUMBER OF ELEMENTS COMPUTED
 	if (elements_read != num_integers) {
 		if (ferror(file)) {
-			perror("Error reading file");
+			fprintf(stderr,"Error reading file");
 		}
 		else {
-			perror("Unexpected end of file\n");
+			fprintf(stderr,"Unexpected end of file\n");
 		}
 		free(MyPM);
 		fclose(file);
@@ -420,7 +426,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
 	// Close the file
 	if (fclose(file) != 0) {
-		perror("Error closing file");
+		fprintf(stderr,"Error closing file");
 		free(MyPM);
 		return 1;
 	}
@@ -432,20 +438,21 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
     //EXTRACT LENGTH AND HEIGHT FROM MyPM
 	Image.Length = MyPM[0];
 	Image.Height = MyPM[1];
+	Image.NumberOfPixels = Image.Length * Image.Height;
 
 	//ERROR_TEST:CHECKS THAT THE IMAGE LENGTH AND HEIGHT IS IN THE APPROPRIATE RANGE
 	if (Image.Height < Error.ImageHeightMin || Image.Height >Error.ImageHeightMax || Image.Length < Error.ImageLengthMin || Image.Length > Error.ImageLengthMax){
-		perror("La longueur et/ou la hauteur de l'image est en dehors de la zone acceptable");
+		fprintf(stderr,"La longueur et/ou la hauteur de l'image est en dehors de la zone acceptable");
 		return 1;
     }
 
     //ERROR_TEST: CHECKS IF NUMBER OF PIXELS IN Pixmap.bin IS EQUAL TO THE LENGTH TIMES THE HEIGHT GIVEN IN Pixmap.bin
     if(Image.Length * Image.Height > num_integers - 2){
-        perror("Pas assez de pixels");
+        fprintf(stderr,"Pas assez de pixels");
         return 1;
     }
     if(Image.Length * Image.Height < num_integers - 2){
-        perror("Trop de pixels\n");
+        fprintf(stderr,"Trop de pixels\n");
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
@@ -506,7 +513,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	//ERROR_TEST: CHECKS IF Pos.txt WAS OPENED
 	if (f_out == NULL)
 	{
-        perror("Error Opening Pos.txt");
+        fprintf(stderr,"Error Opening Pos.txt");
 		return 1;
 	}
 
@@ -515,19 +522,19 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
         RedBall.Score = 0;
         RedBall.X_Coordinate = -1;
         RedBall.Y_coordinate = -1;
-        perror("La boule rouge n'a pas était trouvée");
+        fprintf(stderr,"La boule rouge n'a pas était trouvée");
     };
     if(YellowBall.Score < Error.BallMinScore){
         YellowBall.Score = 0;
         YellowBall.X_Coordinate = -1;
         YellowBall.Y_coordinate = -1;
-        perror("La boule jaune n'a pas était trouvée");
+        fprintf(stderr,"La boule jaune n'a pas était trouvée");
     };
     if(WhiteBall.Score < Error.BallMinScore){
         WhiteBall.Score = 0;
         WhiteBall.X_Coordinate = -1;
         WhiteBall.Y_coordinate = -1;
-        perror("La boule blanche n'a pas était trouvée");
+        fprintf(stderr,"La boule blanche n'a pas était trouvée");
     };
 	
 
@@ -538,6 +545,13 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 #pragma endregion
 
 #pragma region //DEBUG
+
+	Table.BluePercent = (Debug.LightBlueCount * 100) / Image.NumberOfPixels;
+	if (Table.BluePercent < Error.MinBluePercent){
+		fprintf(stderr,"sugma");
+	}
+	
+
 	if(Debug.Status == 1){
 		//OPENS Pos.txt IN WRITE MODE
 		FILE *DebugFile = fopen("Debug.txt", "w");
@@ -545,21 +559,21 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 		//ERROR_TEST: CHECKS IF Pos.txt WAS OPENED
 		if (DebugFile == NULL)
 		{
-			perror("Error Opening Pos.txt");
+			fprintf(stderr,"Error Opening Pos.txt");
 			return 1;
 		}
-		fprintf(DebugFile,"Red: 187, 287, 94\n");
-		fprintf(DebugFile,"Yellow: 596, 229, 69\n");
+		fprintf(DebugFile,"Red: 203, 275, 104\n");
+		fprintf(DebugFile,"Yellow: 604, 220, 61\n");
 		fprintf(DebugFile,"White: 169, 113, 116\n\n\n");
 		fprintf(DebugFile,"IsBall took %lf seconds to execute \n", time_taken);
-		fprintf(DebugFile,"BallSize %d \n", Table.BallSize);
+		//fprintf(DebugFile,"BallSize %d \n", Table.BallSize);
 		//fprintf(DebugFile,"Table.LightBlueBlueMin: %d \n", Table.LightBlueBlueMin);
 		//fprintf(DebugFile,"Table.LightBlueBlueMax: %d \n", Table.LightBlueBlueMax);
 		//fprintf(DebugFile,"Table.LightBlueGreenMin: %d \n", Table.LightBlueGreenMin);
 		//fprintf(DebugFile,"Table.LightBlueGreenMax: %d \n", Table.LightBlueGreenMax);
 		//fprintf(DebugFile,"Table.LightBlueRedMin: %d \n", Table.LightBlueRedMin);
 		//fprintf(DebugFile,"Table.LightBlueRedMax: %d \n", Table.LightBlueRedMax);
-		//fprintf(DebugFile,"Light Blue Count: %d \n", Debug.LightBlueCount);
+		fprintf(DebugFile,"Light Blue Count: %d \n", Debug.LightBlueCount);
 		//fprintf(DebugFile,"Dark Blue Count: %d \n", Debug.DarkBlueCount);
 		//fprintf(DebugFile,"Red Count: %d \n", Debug.RedCount);
 		//fprintf(DebugFile,"Yellow Count: %d \n", Debug.YellowCount);
@@ -568,6 +582,8 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 		fprintf(DebugFile,"Skip Type 1 Count: %d \n", Debug.SkipCountType1);
 		fprintf(DebugFile,"Skip Type 2 Count: %d \n", Debug.SkipCountType2);
 		fprintf(DebugFile,"Scan Count: %d \n", Debug.ScanCount);
+		fprintf(DebugFile,"Blue Percent: %d %% \n", Table.BluePercent);
+
 	}
 #pragma endregion
 
