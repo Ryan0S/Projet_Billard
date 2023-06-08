@@ -152,11 +152,11 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 			(*Debug).WhiteCount++;
 		}
 		if (Red >= Table.DarkBlueRedMin && Red <= Table.DarkBlueRedMax && Green >= Table.DarkBlueGreenMin && Green <= Table.DarkBlueGreenMax && Blue >= Table.DarkBlueBlueMin && Blue <= Table.DarkBlueBlueMax) {
-			Out = Out * 7;
 			(*Debug).DarkBlueCount++;
 		}
 		if (Red >= Table.LightBlueRedMin && Red <= Table.LightBlueRedMax && Green >= Table.LightBlueGreenMin && Green <= Table.LightBlueGreenMax && Blue >= Table.LightBlueBlueMin && Blue <= Table.LightBlueBlueMax) {
 			(*Debug).LightBlueCount++;
+			Out = Out * 7;
 		}
 		if (Out == 1) {
 			Out = 0;
@@ -197,7 +197,7 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 
 			//OPTIMISATION: IF THE PIXELS IN THE MIDDLE OF THE BOX IS THE SAME COLOR AS THE TABLE CONTINUE TO NEXT SQUARE
 			if(Table.BallsMissing == 0){
-				if(MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))] == 7 || MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2 ))+1] == 7 ||MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))-1] == 7 ||MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))+Image.Length] == 7){
+				if(MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))] == 7){
 					(*Debug).SkipCountType1++;
 					continue;
 				}
@@ -470,9 +470,6 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
     WhiteBall.X_Coordinate = 0;
     WhiteBall.Y_coordinate = 0;
 
-	Table.LightBlueRedMax = Table.LightBlueRedMax + 15;
-	Table.LightBlueBlueMin = Table.LightBlueBlueMin - 20;
-
 	Table.DarkBlueRedMin = 0;
     Table.DarkBlueRedMax = 140;
     Table.DarkBlueGreenMin = 0;
@@ -562,6 +559,10 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 			fprintf(stderr,"Error Opening Pos.txt");
 			return 1;
 		}
+		time_t tr;   // not a primitive datatype
+    	time(&tr);
+		fprintf(DebugFile,"\nThis program has been writeen at (date and time): %s\n\n", ctime(&tr));
+
 		fprintf(DebugFile,"Red: 203, 275, 104\n");
 		fprintf(DebugFile,"Yellow: 604, 220, 61\n");
 		fprintf(DebugFile,"White: 169, 113, 116\n\n\n");
