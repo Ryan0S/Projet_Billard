@@ -122,7 +122,7 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 	int k = 1;
 
 	//FOR LOOP TO CYCLE THROUGH ALL OF THE TABLE'S PIXELS 
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel + (Table.BallSize * Image.Length); i++) {
 
 		//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 		if (k == Table.RightBorder - Table.LeftBorder + 1) {
