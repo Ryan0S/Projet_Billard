@@ -120,7 +120,7 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 	int k = 1;
 
 	//FOR LOOP TO CYCLE THROUGH ALL OF THE TABLE'S PIXELS 
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel + (Image.Length * Table.BallSize); i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
 
 		//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 		if (k == Table.RightBorder - Table.LeftBorder + 1) {
@@ -182,7 +182,7 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 }, k = 1, State;
 
 	//FOR LOOP TO MOVE THE BOX YOUR LOOKING AT
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel- (Table.BallSize * Image.Length); i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
 		ScoreR = 0;
 		ScoreW = 0;
 		ScoreY = 0;
@@ -456,8 +456,8 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
-    Table.FirstPixel = (Image.Height - Table.TopBorder) * Image.Length + Table.LeftBorder ;
-    Table.LastPixel = Image.Length * (Image.Height - Table.BottomBorder) - (Image.Length - Table.RightBorder);
+    Table.FirstPixel = Table.BottomBorder * Image.Length + Table.LeftBorder;
+    Table.LastPixel = (Table.TopBorder - Table.BallSize)*Image.Length + Table.RightBorder - Table.BallSize;
 
     //INITIALISE DEFAULT VALUES FOR THE BALLS' SCORE AND COORDINATES
     RedBall.Score = 0;
@@ -561,7 +561,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 		}
 		time_t tr;   // not a primitive datatype
     	time(&tr);
-		fprintf(DebugFile,"\nThis program has been writeen at (date and time): %s\n\n", ctime(&tr));
+		fprintf(DebugFile,"%s\n\n", ctime(&tr));
 
 		fprintf(DebugFile,"Red: 203, 275, 104\n");
 		fprintf(DebugFile,"Yellow: 604, 220, 61\n");
