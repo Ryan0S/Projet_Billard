@@ -85,6 +85,8 @@ struct DebugManagement{
 	int ScanCount;
 	int SkipCountType1;
 	int SkipCountType2;
+	clock_t Timer;
+	double TimeTaken;
 } Debug = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 int IsNumber(char number[]){
@@ -120,7 +122,7 @@ void IsColor(struct BallInformation RedBall, struct BallInformation YellowBall, 
 	int k = 1;
 
 	//FOR LOOP TO CYCLE THROUGH ALL OF THE TABLE'S PIXELS 
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel + (Image.Length * Table.BallSize); i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
 
 		//FILTER TO NOT LOOK AT LEFT AND RIGHT EDGES
 		if (k == Table.RightBorder - Table.LeftBorder + 1) {
@@ -182,7 +184,7 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 	int ScoreR = 0, ScoreY = 0, ScoreW = 0, MaxR[2] = { 0,0 }, MaxY[2] = { 0,0 }, MaxW[2] = { 0,0 }, k = 1, State;
 
 	//FOR LOOP TO MOVE THE BOX YOUR LOOKING AT
-	for (int i = Table.FirstPixel - 1; i < Table.LastPixel- (Table.BallSize * Image.Length); i++) {
+	for (int i = Table.FirstPixel - 1; i < Table.LastPixel; i++) {
 		ScoreR = 0;
 		ScoreW = 0;
 		ScoreY = 0;
@@ -196,25 +198,20 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 			else k++;
 
 			//OPTIMISATION: IF THE PIXELS IN THE MIDDLE OF THE BOX IS THE SAME COLOR AS THE TABLE CONTINUE TO NEXT SQUARE
-			if(Table.BallsMissing == 0){
-				if(MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))] == 7){
+				if(MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2))] == 7 || MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2)) + 1] == 7|| MyPM[i + (Table.BallSize/2) + (Image.Length * (Table.BallSize/2) + 1)] == 7){
 					(*Debug).SkipCountType1++;
 					continue;
 				}
-			}
 		//FOR LOOP GO FROM TOP TO BOTTOM IN A SQUARE
 		for (int t1 = 0; t1 < Table.BallSize; t1++) {
 			//OPTIMISATION: IF THE AMOUNT OF PIXELS LEFT TO LOOK AT IN A SQUARE IS SMALLER THAN THE DIFFERENCE BETWEEN THE MAX SCORE AND CURRENT SCORE CONTINUE TO NEXT SQUARE
 			if(State != 3 && State != 7 && State != 10 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxR[1]-ScoreR){
-				(*Debug).SkipCountType2++;
 				State = State - 2;
 			}
 			if(State != 3 && State != 2 && State != 5 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxW[1]-ScoreW){
-				(*Debug).SkipCountType2++;
 				State = State - 7;
 			}
 			if(State != 2 && State != 7 && State != 9 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxY[1]-ScoreY){
-				(*Debug).SkipCountType2++;
 				State = State - 3;
 			}
 			//FOR LOOP GO FROM LEFT TO RIGHT IN A SQUARE
@@ -224,6 +221,7 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 				switch(State){
 					case 0:
 						t1 = Table.BallSize;
+						(*Debug).SkipCountType2++;
 						break;
 					default:
 						if(MyPM[i + t2 + t1 * Image.Length] == 3 || MyPM[i + t2 + t1 * Image.Length] == 21) {
@@ -287,6 +285,7 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 }
 
 int main(int argc, char *argv[]) {
+Debug.Timer = clock();
 #pragma region //INITIALISATION OF ERROR VALUES
 Error.BallSizeMin = 5;
 Error.BallSizeMax = 20;
@@ -303,7 +302,7 @@ Error.ImageLengthMax = 1000;
 Error.RGBMin = 0;
 Error.RGBMax = 255;
 Table.BallsMissing = 0;
-Error.MinBluePercent = 1;
+Error.MinBluePercent = 35;
 Debug.Status = 0;
 
 #pragma endregion
@@ -382,7 +381,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
 #pragma region //OPEN Pixmap.bin AND STORES IT IN MyPM
     //OPEN Pixmap.bin FOR READING
-	FILE *file = fopen("Pixmap218.bin", "rb");
+	FILE *file = fopen("pixmap.bin", "rb");
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
@@ -456,8 +455,8 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
-    Table.FirstPixel = (Image.Height - Table.TopBorder) * Image.Length + Table.LeftBorder ;
-    Table.LastPixel = Image.Length * (Image.Height - Table.BottomBorder) - (Image.Length - Table.RightBorder);
+    Table.FirstPixel = Table.BottomBorder * Image.Length + Table.LeftBorder;
+    Table.LastPixel = (Table.TopBorder - Table.BallSize)*Image.Length + Table.RightBorder - Table.BallSize;
 
     //INITIALISE DEFAULT VALUES FOR THE BALLS' SCORE AND COORDINATES
     RedBall.Score = 0;
@@ -487,16 +486,11 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 #pragma endregion
 
 #pragma region //FUNCTION CALLING
-    clock_t t;
-	t = clock();
 	IsColor(RedBall, YellowBall, WhiteBall, Table, MyPM, &Debug);
     IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM, &Debug);
-	t = clock() - t;
-    double time_taken; 
-	time_taken = ((double)t)/CLOCKS_PER_SEC;// in seconds
 
 	//CHECKS IF ALL BALLS WERE FOUND
-    if(Table.BallsMissing == 0 && RedBall.Score < Error.BallMinScore || YellowBall.Score < Error.BallMinScore ||WhiteBall.Score < Error.BallMinScore){
+    if(Table.BallsMissing == 0 && (RedBall.Score < Error.BallMinScore || YellowBall.Score < Error.BallMinScore ||WhiteBall.Score < Error.BallMinScore)){
 		Table.BallsMissing = 1;
 		IsBall(&RedBall, &YellowBall, &WhiteBall, Table, Image, MyPM, &Debug);
     };
@@ -505,7 +499,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
 #pragma region //CREATE POX.TXT FILE
     //OPENS Pos.txt IN WRITE MODE
-	FILE *f_out = fopen("Pos.txt", "w");
+	FILE *f_out = fopen("pos.txt", "w");
 
 	//ERROR_TEST: CHECKS IF Pos.txt WAS OPENED
 	if (f_out == NULL)
@@ -533,7 +527,6 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
         WhiteBall.Y_coordinate = -1;
         fprintf(stderr,"La boule blanche n'a pas était trouvée");
     };
-	
 
     //WRITES COORDINATES AND SCORE TO pos.txt
     fprintf(f_out, "Red: %d, %d, %d\n", RedBall.X_Coordinate, RedBall.Y_coordinate, RedBall.Score);
@@ -542,13 +535,14 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 #pragma endregion
 
 #pragma region //DEBUG
-
 	Table.BluePercent = (Debug.LightBlueCount * 100) / Image.NumberOfPixels;
 	if (Table.BluePercent < Error.MinBluePercent){
-		fprintf(stderr,"sugma");
+		fprintf(stderr,"Wrong Image Inserted");
+		return 1;
 	}
 	
-
+	Debug.Timer = clock() - Debug.Timer;
+	Debug.TimeTaken = ((double)Debug.Timer)/CLOCKS_PER_SEC;
 	if(Debug.Status == 1){
 		//OPENS Pos.txt IN WRITE MODE
 		FILE *DebugFile = fopen("Debug.txt", "w");
@@ -560,13 +554,9 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 			return 1;
 		}
 		time_t tr;   // not a primitive datatype
-    	time(&tr);
-		fprintf(DebugFile,"\nThis program has been writeen at (date and time): %s\n\n", ctime(&tr));
-
-		fprintf(DebugFile,"Red: 203, 275, 104\n");
-		fprintf(DebugFile,"Yellow: 604, 220, 61\n");
-		fprintf(DebugFile,"White: 169, 113, 116\n\n\n");
-		fprintf(DebugFile,"IsBall took %lf seconds to execute \n", time_taken);
+		time(&tr);
+		fprintf(DebugFile,"%s\n\n", ctime(&tr));
+		fprintf(DebugFile,"Main took: %lf seconds to execute \n", Debug.TimeTaken);
 		//fprintf(DebugFile,"BallSize %d \n", Table.BallSize);
 		//fprintf(DebugFile,"Table.LightBlueBlueMin: %d \n", Table.LightBlueBlueMin);
 		//fprintf(DebugFile,"Table.LightBlueBlueMax: %d \n", Table.LightBlueBlueMax);
@@ -574,11 +564,11 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 		//fprintf(DebugFile,"Table.LightBlueGreenMax: %d \n", Table.LightBlueGreenMax);
 		//fprintf(DebugFile,"Table.LightBlueRedMin: %d \n", Table.LightBlueRedMin);
 		//fprintf(DebugFile,"Table.LightBlueRedMax: %d \n", Table.LightBlueRedMax);
-		fprintf(DebugFile,"Light Blue Count: %d \n", Debug.LightBlueCount);
+		//fprintf(DebugFile,"Light Blue Count: %d \n", Debug.LightBlueCount);
 		//fprintf(DebugFile,"Dark Blue Count: %d \n", Debug.DarkBlueCount);
 		//fprintf(DebugFile,"Red Count: %d \n", Debug.RedCount);
 		//fprintf(DebugFile,"Yellow Count: %d \n", Debug.YellowCount);
-		fprintf(DebugFile,"White Count: %d \n", Debug.WhiteCount);
+		//fprintf(DebugFile,"White Count: %d \n", Debug.WhiteCount);
 		//fprintf(DebugFile,"Neither Count: %d \n", Debug.NeitherCount);
 		fprintf(DebugFile,"Skip Type 1 Count: %d \n", Debug.SkipCountType1);
 		fprintf(DebugFile,"Skip Type 2 Count: %d \n", Debug.SkipCountType2);
