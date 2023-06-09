@@ -1,9 +1,31 @@
+/*
+Pix2Pos.c
+
+TAKES BINARY FILE OF AN IMAGE OF A FRENCH POOL TABLE GAME AND OUTPUTS COORDINATES FOR ALL THREE BALLS IN A TEXT FILE
+
+THE CODE USES 3 DIFFERENT FUNCTIONS : 
+
+    - IsColor
+    - IsBall
+    - IsNumber
+
+(INFORMATION ABOUT EACH OF THEM BELOW)
+
+INPUT
+    - Binary Pixmap of image: (pixmap.bin)
+	- Command line (see line 351 for additional information)
+
+OUTPUT
+    - Text file with coordinates for all three balls (pos.txt)
+
+AUTHORS : ROMAIN LATTION & RYAN SVOBODA
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-
 
 //BallInformation IS A STRUCTURE USED TO STORE ALL USEFUL INFORMATION ABOUT A BALL
 struct BallInformation {
