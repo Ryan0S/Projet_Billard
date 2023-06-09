@@ -66,6 +66,17 @@ Yw=480-Yw;
 [Xy, Yy] = RemoveOutlier(Xy,Yy);
 [Xw, Yw] = RemoveOutlier(Xw,Yw);
 
+%MAKE SURE WE HAVE AS MANY X VALUES AS Y VALUES%
+if length(Xr) ~= length(Yr)
+warning(length(Xr) ~= length(Yr))
+end
+if length(Xy) ~= length(Yy)
+warning(length(Xy) ~= length(Yy))
+end
+if length(Xw) ~= length(Yw)
+warning(length(Xw) ~= length(Yw))
+end
+
 %% COMPUTATION %%
 
 %FIND THE BOUNDARY BOX%
