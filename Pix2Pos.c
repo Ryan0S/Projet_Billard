@@ -225,49 +225,49 @@ void IsBall(struct BallInformation *RedBall, struct BallInformation *YellowBall,
 					continue;
 				}
 		//FOR LOOP GO FROM TOP TO BOTTOM IN A SQUARE
-		for (int t1 = 0; t1 < Table.BallSize; t1++) {
+		for (int line = 0; line < Table.BallSize; line++) {
 			//OPTIMISATION TYPE 2: IF THE AMOUNT OF PIXELS LEFT TO LOOK AT IN A SQUARE IS SMALLER THAN THE DIFFERENCE BETWEEN THE MAX SCORE AND CURRENT SCORE CONTINUE TO NEXT SQUARE
-			if(State != 3 && State != 7 && State != 10 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxR[1]-ScoreR){
+			if(State != 3 && State != 7 && State != 10 && State != 0 && ((Table.BallSize * Table.BallSize) - ( line * Table.BallSize)) < MaxR[1]-ScoreR){
 				State = State - 2;
 			}
-			if(State != 3 && State != 2 && State != 5 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxW[1]-ScoreW){
+			if(State != 3 && State != 2 && State != 5 && State != 0 && ((Table.BallSize * Table.BallSize) - ( line * Table.BallSize)) < MaxW[1]-ScoreW){
 				State = State - 7;
 			}
-			if(State != 2 && State != 7 && State != 9 && State != 0 && ((Table.BallSize * Table.BallSize) - ( t1 * Table.BallSize)) < MaxY[1]-ScoreY){
+			if(State != 2 && State != 7 && State != 9 && State != 0 && ((Table.BallSize * Table.BallSize) - ( line * Table.BallSize)) < MaxY[1]-ScoreY){
 				State = State - 3;
 			}
 			//FOR LOOP GO FROM LEFT TO RIGHT IN A SQUARE
-			for (int t2 = 0; t2 < Table.BallSize; t2++) {
+			for (int row = 0; row < Table.BallSize; row++) {
 				(*Debug).ScanCount++;
 				//SWITCH TO ONLY LOOK FOR BALLS THAT CAN BE IN A GIVEN SQUARE
 				switch(State){
 					case 0:
-						t1 = Table.BallSize;
+						line = Table.BallSize;
 						(*Debug).SkipCountType2++;
 						break;
 					default:
-						if(MyPM[i + t2 + t1 * Image.Width] == 3 || MyPM[i + t2 + t1 * Image.Width] == 21) {
+						if(MyPM[i + row + line * Image.Width] == 3 || MyPM[i + row + line * Image.Width] == 21) {
 							ScoreY++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 6 || MyPM[i + t2 + t1 * Image.Width] == 42) {
+						else if(MyPM[i + row + line * Image.Width] == 6 || MyPM[i + row + line * Image.Width] == 42) {
 							ScoreR++;
 							ScoreY++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 10 || MyPM[i + t2 + t1 * Image.Width] == 70) {
+						else if(MyPM[i + row + line * Image.Width] == 10 || MyPM[i + row + line * Image.Width] == 70) {
 							ScoreR++;
 							ScoreW++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 2 || MyPM[i + t2 + t1 * Image.Width] == 14) {
+						else if(MyPM[i + row + line * Image.Width] == 2 || MyPM[i + row + line * Image.Width] == 14) {
 							ScoreR++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 5 || MyPM[i + t2 + t1 * Image.Width] == 35) {
+						else if(MyPM[i + row + line * Image.Width] == 5 || MyPM[i + row + line * Image.Width] == 35) {
 							ScoreW++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 15 || MyPM[i + t2 + t1 * Image.Width]==105) {
+						else if(MyPM[i + row + line * Image.Width] == 15 || MyPM[i + row + line * Image.Width]==105) {
 							ScoreY++;
 							ScoreW++;
 						}
-						else if(MyPM[i + t2 + t1 * Image.Width] == 30 || MyPM[i + t2 + t1 * Image.Width]==210) {
+						else if(MyPM[i + row + line * Image.Width] == 30 || MyPM[i + row + line * Image.Width]==210) {
 							ScoreY++;
 							ScoreW++;
 							ScoreR++;
@@ -407,7 +407,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
-		fprintf(stderr,"Error opening file");
+		fprintf(stderr,"Error opening pixmap.bin");
 		return 1;
 	}
 
@@ -424,7 +424,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
     //ERROR_TEST: CHECK IF MEMORY WAS ALLOCATED FOR MyPM
 	if (MyPM == NULL) {
-		fprintf(stderr,"Error allocating memory");
+		fprintf(stderr,"Error allocating memory for MyPM.");
 		fclose(file);
 		return 1;
 	}
@@ -438,7 +438,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 			fprintf(stderr,"Error reading file");
 		}
 		else {
-			fprintf(stderr,"Unexpected end of file\n");
+			fprintf(stderr,"Unexpected end of file");
 		}
 		free(MyPM);
 		fclose(file);
@@ -473,7 +473,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
         return 1;
     }
     if(Image.Width * Image.Height < num_integers - 2){
-        fprintf(stderr,"Too many pixels\n");
+        fprintf(stderr,"Too many pixels");
     }
 
     //COMPUTE FIRST AND LAST PIXEL OF TABLE
