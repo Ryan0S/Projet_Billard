@@ -418,7 +418,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 
 #pragma region //OPEN pixmap.bin AND STORES IT IN MyPM
     //OPEN pixmap.bin FOR READING
-	FILE *file = fopen("Pixmap217.bin", "rb");
+	FILE *file = fopen("pixmap.bin", "rb");
 
     //ERROR_TEST: CHECK IF FILE WAS OPENED
 	if (file == NULL) {
