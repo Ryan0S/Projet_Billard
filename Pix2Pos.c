@@ -161,10 +161,6 @@ void IsColor( unsigned int MyPM[]) {
 		Red = (HexRGB >> 16) & 255;
 
 		//OUT IS THE NEW VALUE ASSIGNED TO THE ELEMENTS IN MyPM
-			// IF OUT IS A MULTIPLE OF 2 IT IS IN THE RED BALL RGB RANGE
-			// IF OUT IS A MULTIPLE OF 3 IT IS IN THE YELLOW BALL RGB RANGE
-			// IF OUT IS A MULTIPLE OF 5 IT IS IN THE WHITE BALL RGB RANGE
-			// IF OUT IS A MULTIPLE OF 7 IT IS IN THE BLUE POOL TABLE RGB RANGE
 		Out = 1;
 
 		//CHECKS IF PIXELS ARE IN A GIVEN RGB RANGE AND CHANGES OUT ACCORDINGLY
@@ -236,7 +232,7 @@ void IsBall(unsigned int MyPM[]) {
 			else k++;
 
 			//OPTIMISATION TYPE 1: IF THE 3 PIXELS (L SHAPE) IN THE MIDDLE OF THE BallSize BOX IS THE SAME COLOR AS THE TABLE DO NOT SCAN THE CURRENT BOX AND CONTINUE TO NEXT SQUARE 
-				if(MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2))] == 7 || MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2)) + 1] == 7|| MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2) + 1)] == 7){
+				if(MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2))] == 7 || MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2)) + 1] == 7|| MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2) + 1)] == 7|| MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2) - 1)] == 7|| MyPM[i + (LocalBallSize/2) + (Image.Width * (LocalBallSize/2)) - 1] == 7){
 					Debug.SkipCountType1++;
 					continue;
 				}
@@ -341,7 +337,7 @@ Error.ImageWidthMax = 1000;
 Error.RGBMin = 0;
 Error.RGBMax = 255;
 Error.MinBluePercent = 35;
-Debug.Status = 1;
+Debug.Status = 0;
 #pragma endregion
 
 #pragma region //ASSIGNS COMMAND LINE INPUTS TO APPROPRIATE VARIABLES
@@ -357,6 +353,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	Res = IsNumber(argv[j]);
 	if (Res != 1){
 		fprintf(stderr,"Inputs must be numbers.");
+		return 1;
 	}
 }
 
@@ -412,6 +409,7 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	for(int j = 5; j<=28; j++){
 		if(atoi(argv[j])< Error.RGBMin || atoi(argv[j])> Error.RGBMax){
 			fprintf(stderr,"Input 5-28 must be RGB values.");
+			return 1;
 		}
 	}
 	#pragma endregion
@@ -451,9 +449,11 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	if (elements_read != num_integers) {
 		if (ferror(file)) {
 			fprintf(stderr,"Error reading file");
+			return 1;
 		}
 		else {
 			fprintf(stderr,"Unexpected end of file");
+			return 1;
 		}
 		free(MyPM);
 		fclose(file);
@@ -479,6 +479,12 @@ for(int j=1; j <= Error.NumberOfInputs; j++){
 	//ERROR_TEST:CHECKS THAT THE IMAGE Width AND HEIGHT IS IN THE APPROPRIATE RANGE
 	if (Image.Height < Error.ImageHeightMin || Image.Height >Error.ImageHeightMax || Image.Width < Error.ImageWidthMin || Image.Width > Error.ImageWidthMax){
 		fprintf(stderr,"The image dimensions are not in the appropriate range.");
+		return 1;
+    }
+
+	//ERROR_TEST:CHECKS THAT THE IMAGE DIMENSIONS ARE BIGGER THAN THE TABLE DIMENSIONS
+	if (Image.Height < Table.Height || Image.Width < Table.Width){
+		fprintf(stderr,"The table can not be bigger than the image.");
 		return 1;
     }
 
