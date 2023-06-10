@@ -436,7 +436,7 @@ function [IdxTouch]=GetTouchIdx(X,Y,Xmin, Xmax, Ymin, Ymax, BallBorderDist)
 %          - THRESHOLD TO DETECT CONTACT (BallBorderDist)
 %          - ALL OF THE EDGES OF THE TABLE (Xmin, Xmax, Ymin, Ymax)%
 
-% OUTPUTS: - ALL FRAMES WHEN BALL TOUCHED EDGE (FirstBall)%
+% OUTPUTS: - ALL FRAMES WHEN BALL TOUCHED EDGE (IdxTouch)%
 
 %RIGHT EDGE
 %FIND ALL FRAMES WHERE BALL IS BESIDE EDGE%
